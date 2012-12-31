@@ -74,7 +74,7 @@
  */
 
 #include <sys/param.h>
-#include <luna68k/stand/status.h>
+#include "status.h"
 
 dev_t  rst0 = 0x0000;
 dev_t nrst0 = 0x0004;

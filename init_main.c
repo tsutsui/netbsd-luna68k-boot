@@ -71,9 +71,9 @@
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <machine/cpu.h>
-#include <machine/stinger.h>
-#include <luna68k/stand/romvec.h>
-#include <luna68k/stand/status.h>
+#include "stinger.h"
+#include "romvec.h"
+#include "status.h"
 
 extern int cpuspeed;
 extern int dipsw1, dipsw2;

@@ -80,8 +80,8 @@
 
 #include <sys/param.h>
 #include <sys/mtio.h>
-#include <luna68k/dev/scsireg.h>
-#include <luna68k/stand/device.h>
+#include "scsireg.h"
+#include "device.h"
 
 extern int scsi_test_unit_rdy();
 extern int scsi_request_sense();

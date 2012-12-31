@@ -74,8 +74,8 @@
  */
 
 #include <sys/param.h>
-#include <luna68k/dev/scsireg.h>
-#include <luna68k/stand/status.h>
+#include "scsireg.h"
+#include "status.h"
 
 
 int scsi_device = 6;

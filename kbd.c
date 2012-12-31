@@ -74,7 +74,7 @@
  */
 
 #include <sys/param.h>
-#include <luna68k/stand/kbdreg.h>
+#include "kbdreg.h"
 
 struct kbd_keymap kbd_keymap[] = {
 	KC_IGNORE,	0,		0,		/*   0 [0x00]	      */

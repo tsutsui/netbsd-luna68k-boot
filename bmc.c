@@ -75,8 +75,8 @@
 
 #include <sys/param.h>
 #include <sys/systm.h>
-#include <luna68k/stand/rcvbuf.h>
-#include <luna68k/stand/preset.h>
+#include "rcvbuf.h"
+#include "preset.h"
 
 extern	int dipsw1;
 extern	int nplane;

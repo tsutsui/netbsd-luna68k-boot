@@ -73,9 +73,9 @@
 #define NSIO 2
 
 #include <sys/param.h>
-#include <luna68k/stand/sioreg.h>
-#include <luna68k/stand/rcvbuf.h>
-#include <luna68k/stand/kbdreg.h>
+#include "sioreg.h"
+#include "rcvbuf.h"
+#include "kbdreg.h"
 
 struct rcvbuf	rcvbuf[NSIO];
 

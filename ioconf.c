@@ -71,7 +71,7 @@
 #include <sys/param.h>
 #include <sys/buf.h>
 #include <sys/map.h>
-#include <luna68k/stand/device.h>
+#include "device.h"
 
 
 #define C (caddr_t)

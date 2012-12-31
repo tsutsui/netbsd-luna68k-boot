@@ -76,9 +76,9 @@
 #include <sys/param.h>
 #include <sys/reboot.h>
 #include <sys/exec.h>
-#include <machine/stinger.h>
-#include <luna68k/stand/saio.h>
-#include <luna68k/stand/status.h>
+#include "stinger.h"
+#include "saio.h"
+#include "status.h"
 
 extern struct KernInter	*kiff;
 

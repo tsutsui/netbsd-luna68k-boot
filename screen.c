@@ -74,7 +74,7 @@
  */
 
 #include <sys/param.h>
-#include <luna68k/stand/status.h>
+#include "status.h"
 
 int
 screen(argc, argv)

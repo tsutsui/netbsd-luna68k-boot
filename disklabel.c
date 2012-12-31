@@ -76,9 +76,9 @@
 #include <sys/param.h>
 #define DKTYPENAMES
 #include <sys/disklabel.h>
-#include <luna68k/stand/saio.h>
-#include <luna68k/stand/status.h>
-#include <luna68k/stand/omron_disklabel.h>
+#include "saio.h"
+#include "status.h"
+#include "omron_disklabel.h"
 
 #define LABEL_SIZE BBSIZE
 

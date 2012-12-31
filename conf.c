@@ -68,7 +68,7 @@
  *	@(#)conf.c	8.1 (Berkeley) 6/10/93
  */
 
-#include <luna68k/stand/saio.h>
+#include "saio.h"
 
 devread(io)
 	register struct iob *io;

@@ -71,8 +71,8 @@
 /* romcons.c   OCT-21-1991 */
 
 #include <sys/types.h>
-#include <luna68k/luna68k/cons.h>
-#include <luna68k/stand/romvec.h>
+#include "cons.h"
+#include "romvec.h"
 
 romcnprobe(cp)
 	struct consdev *cp;

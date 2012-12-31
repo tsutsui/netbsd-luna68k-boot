@@ -78,7 +78,7 @@
 
 #include <sys/param.h>
 #include <sys/dkstat.h>
-#include <luna68k/stand/device.h>
+#include "device.h"
 
 int	dkn;		    /* number of iostat dk numbers assigned so far */
 struct	hp_hw sc_table[MAX_CTLR];

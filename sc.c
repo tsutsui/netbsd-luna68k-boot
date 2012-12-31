@@ -77,9 +77,9 @@
 #define NSC	1
 
 #include <sys/param.h>
-#include <luna68k/dev/scsireg.h>
-#include <luna68k/stand/device.h>
-#include <luna68k/stand/scsivar.h>
+#include "scsireg.h"
+#include "device.h"
+#include "scsivar.h"
 
 #define SCSI_IPL	2
 #define SCSI_ID		7

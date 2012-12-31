@@ -73,7 +73,7 @@
  * by A.Fujita, JAN-30-1992
  */
 
-#include <luna68k/stand/status.h>
+#include "status.h"
 
 /* for scsi.c */
 

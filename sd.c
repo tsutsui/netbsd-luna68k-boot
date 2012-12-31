@@ -81,9 +81,9 @@
 
 #include <sys/param.h>
 #include <sys/disklabel.h>
-#include <luna68k/dev/scsireg.h>
-#include <luna68k/stand/saio.h>
-#include <luna68k/stand/device.h>
+#include "scsireg.h"
+#include "saio.h"
+#include "device.h"
 
 
 int	sdinit(), sdstrategy(), sdstart(), sdustart(), sdgo(), sdintr();

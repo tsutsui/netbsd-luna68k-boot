@@ -77,8 +77,8 @@
 #include <sys/stat.h>
 #define DKTYPENAMES
 #include <sys/disklabel.h>
-#include <luna68k/stand/status.h>
-#include <luna68k/stand/omron_disklabel.h>
+#include "status.h"
+#include "omron_disklabel.h"
 
 #define LABEL_SIZE 512
 

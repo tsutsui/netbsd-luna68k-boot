@@ -70,7 +70,7 @@
 
 #include <sys/param.h>
 #include <machine/frame.h>
-#include <luna68k/stand/romvec.h>
+#include "romvec.h"
 
 #define	USER	040		/* user-mode flag added to type */
 
