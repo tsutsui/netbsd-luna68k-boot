@@ -188,7 +188,7 @@ stident(struct st_softc *sc, struct hp_device *hd)
 		return (-1);
 	}
 
-	bcopy((caddr_t)&inqbuf.vendor_id, (caddr_t)idstr, 28);
+	bcopy((void *)&inqbuf.vendor_id, idstr, 28);
 	for (i = 27; i > 23; --i)
 		if (idstr[i] != ' ')
 			break;
@@ -441,7 +441,7 @@ stwrite(dev_t dev, char *buf, int size)
 }
 
 int
-stioctl(dev_t dev, int cmd, caddr_t data, int flag, struct proc *p)
+stioctl(dev_t dev, int cmd, char *data, int flag, struct proc *p)
 {
 }
 

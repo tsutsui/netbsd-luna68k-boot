@@ -120,7 +120,7 @@ main(void)
 
 	printf("\n\nStinger ver 0.0 [%s]\n\n", VERS_LOCAL);
 
-	kiff->maxaddr = (caddr_t) (ROM_memsize -1);
+	kiff->maxaddr = (void *) (ROM_memsize -1);
 	kiff->dipsw   = ~((dipsw2 << 8) | dipsw1) & 0xFFFF;
 	kiff->plane   = nplane;
 

@@ -126,7 +126,7 @@ find_controller(struct hp_hw *hw)
 {
 	struct hp_ctlr *hc;
 	struct hp_ctlr *match_c;
-	caddr_t oaddr;
+	uint8_t *oaddr;
 	int sc;
 
 #ifdef DEBUG
@@ -201,7 +201,7 @@ find_device(struct hp_hw *hw)
 {
 	struct hp_device *hd;
 	struct hp_device *match_d;
-	caddr_t oaddr;
+	uint8_t *oaddr;
 	int sc;
 
 #ifdef DEBUG
@@ -490,7 +490,7 @@ find_devs(void)
 	setup_hw(hw, (char *) 0xe1000000, 0xe, SCSI,     0xe, "MB89352  (SPC)");
 	hw++;
 
-	if (!badaddr((caddr_t) 0xf1000000)) {
+	if (!badaddr((void *) 0xf1000000)) {
 		setup_hw(hw, (char *) 0xf1000000, 0xf, NET,      0xf, "Am7990 (LANCE)");
 		hw++;
 	}

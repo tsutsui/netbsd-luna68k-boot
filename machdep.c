@@ -82,7 +82,7 @@ straytrap(int addr)
 int	*nofault = 0;
 
 int
-badaddr(caddr_t addr)
+badaddr(volatile void *addr)
 {
 	int i;
 	label_t	faultbuf;

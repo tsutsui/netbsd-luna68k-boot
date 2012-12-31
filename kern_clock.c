@@ -78,6 +78,6 @@
  */
 /*ARGSUSED*/
 void
-hardclock(caddr_t pc, int ps)
+hardclock(void *pc, int ps)
 {
 }

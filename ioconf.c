@@ -74,7 +74,7 @@
 #include "device.h"
 
 
-#define C (caddr_t)
+#define C (void *)
 #define D (struct driver *)
 
 extern struct driver scdriver;

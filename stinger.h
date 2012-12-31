@@ -74,7 +74,7 @@
  */
 
 struct KernInter {
-	caddr_t	maxaddr;
+	void 	*maxaddr;
 	u_int	dipsw;
 	int	plane;
 };

@@ -109,7 +109,7 @@ devclose(struct iob *io)
 }
 
 int
-devioctl(struct iob *io, int cmd, caddr_t arg)
+devioctl(struct iob *io, int cmd, void *arg)
 {
 
 	return ((*devsw[io->i_dev].dv_ioctl)(io, cmd, arg));
@@ -125,13 +125,13 @@ nullsys(struct iob *io)
 
 /*ARGSUSED*/
 int
-nullioctl(struct iob *io, int cmd, caddr_t arg)
+nullioctl(struct iob *io, int cmd, void *arg)
 {
 
 	return (ECMD);
 }
 
-int	nullsys(struct iob *), nullioctl(struct iob *, int, caddr_t);
+int	nullsys(struct iob *), nullioctl(struct iob *, int, void *);
 int	sdstrategy(struct iob *, int), sdopen(struct iob *), sdioctl(dev_t, u_long data[]);
 
 struct devsw devsw[] = {
