@@ -89,20 +89,20 @@ int	cur_unit;
 
 
 void
-_siointr()
+_siointr(void)
 {
-	register int unit;
+	int unit;
 
 	for (unit = 0; unit < NSIO; unit++)
 		siointr(unit);
 }
 
-siointr(unit)
-	register int unit;
+void
+siointr(int unit)
 {
-	register struct	siodevice *sio = sio_addr[unit];
-	register int rr0 = sioreg(REG(unit, RR0), 0);
-	register int rr1 = sioreg(REG(unit, RR1), 0);
+	struct siodevice *sio = sio_addr[unit];
+	int rr0 = sioreg(REG(unit, RR0), 0);
+	int rr1 = sioreg(REG(unit, RR1), 0);
 
 	if (rr0 & RR0_RXAVAIL) {
 		if (rr1 & RR1_FRAMING)
@@ -112,7 +112,7 @@ siointr(unit)
 		    sioreg(REG(unit, WR0), WR0_ERRRST); /* Channel-A Error Reset */
 
 		if (unit == 1) {
-			register int c = kbd_decode(sio_addr[unit]->sio_data);
+			int c = kbd_decode(sio_addr[unit]->sio_data);
 
 			if ((c & KC_TYPE) == KC_CODE)
 				PUSH_RBUF(unit, c);
@@ -128,8 +128,8 @@ siointr(unit)
 #include <luna68k/luna68k/cons.h>
 #include "romvec.h"
 
-siocnprobe(cp)
-	struct consdev *cp;
+void
+siocnprobe(struct consdev *cp)
 {
 	sio_addr[0] = (struct siodevice *) 0x51000000;
 	sio_addr[1] = (struct siodevice *) 0x51000004;
@@ -148,8 +148,8 @@ siocnprobe(cp)
 	cp->cn_pri = CN_NORMAL;
 }
 
-siocninit(cp)
-	struct consdev *cp;
+void
+siocninit(struct consdev *cp)
 {
 	int unit = siounit(cp->cn_dev);
 
@@ -157,10 +157,10 @@ siocninit(cp)
 	sioconsole = unit;
 }
 
-siocngetc(dev)
-	dev_t dev;
+int
+siocngetc(dev_t dev)
 {
-	register int c, unit = siounit(dev);
+	int c, unit = siounit(dev);
 
 	while (RBUF_EMPTY(unit)) {
 		DELAY(10);
@@ -171,9 +171,8 @@ siocngetc(dev)
 	return(c);
 }
 
-siocnputc(dev, c)
-	dev_t dev;
-	int c;
+void
+siocnputc(dev_t dev, int c)
 {
 	int unit = siounit(dev);
 	int s;
@@ -198,7 +197,8 @@ siocnputc(dev, c)
 
 /* SIO misc routines */
 
-sioinit()
+void
+sioinit(void)
 {
 	int s;
 
@@ -232,10 +232,9 @@ sioinit()
 }
 
 int
-sioreg(reg, val)
-	register int reg, val;
+sioreg(int reg, int val)
 {
-	register int chan;
+	int chan;
 
 	chan = CHANNEL(reg);
 

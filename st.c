@@ -83,17 +83,16 @@
 #include "scsireg.h"
 #include "device.h"
 
-extern int scsi_test_unit_rdy();
-extern int scsi_request_sense();
-extern int scsi_immed_command();
+extern int scsi_test_unit_rdy(int, int, int);
+extern int scsi_request_sense(int, int, int, u_char *, unsigned int);
+extern int scsi_immed_command(int, int, int, struct scsi_fmt_cbd *, u_char *, unsigned int);
 
-extern int scgo();
-extern void scfree();
+extern int scgo(void);
 
-int	stinit(), ststrategy(), ststart(), stintr();
+int	stinit(struct hp_device *), ststrategy(void), ststart(int), stintr(int, int);
 
 struct	driver stdriver = {
-	stinit, "st", ststart, (int (*)()) 0, stintr, (int (*)()) 0
+	stinit, "st", ststart, (int (*)(void)) 0, stintr, (int (*)(void)) 0
 };
 
 struct	st_softc {
@@ -133,10 +132,9 @@ struct	scsi_fmt_sense stsense[NST];
  */
 
 int
-stinit(hd)
-	register struct hp_device *hd;
+stinit(struct hp_device *hd)
 {
-	register struct st_softc *sc = &st_softc[hd->hp_unit];
+	struct st_softc *sc = &st_softc[hd->hp_unit];
 
 	sc->sc_hd = hd;
 	sc->sc_punit = stpunit(hd->hp_flags);
@@ -158,15 +156,13 @@ static struct scsi_fmt_cdb inq = {
 };
 
 int
-stident(sc, hd)
-	struct st_softc *sc;
-	struct hp_device *hd;
+stident(struct st_softc *sc, struct hp_device *hd)
 {
 	char idstr[32];
 	int unit;
-	register int ctlr, slave;
-	register int i, stat;
-	register int tries = 10;
+	int ctlr, slave;
+	int i, stat;
+	int tries = 10;
 
 	ctlr = hd->hp_ctlr;
 	slave = hd->hp_slave;
@@ -217,11 +213,10 @@ stident(sc, hd)
  */
 
 int
-stopen(dev)
-	dev_t dev;
+stopen(dev_t dev)
 {
-	register int unit = stunit(dev);
-	register struct st_softc *sc = &st_softc[unit];
+	int unit = stunit(dev);
+	struct st_softc *sc = &st_softc[unit];
 
 	if (unit >= NST || (sc->sc_flags & STF_ALIVE) == 0)
 		return(-1);
@@ -236,11 +231,10 @@ stopen(dev)
 }
 
 /*ARGSUSED*/
-stclose(dev)
-	dev_t dev;
+stclose(dev_t dev)
 {
-	register int unit = stunit(dev);
-	register struct st_softc *sc = &st_softc[unit];
+	int unit = stunit(dev);
+	struct st_softc *sc = &st_softc[unit];
 
 	printf("st: sc->sc_flags = 0x%s\n", hexstr(sc->sc_flags, 8));
 
@@ -262,13 +256,12 @@ stclose(dev)
  */
 
 int
-ststrategy()
+ststrategy(void)
 {
 }
 
 int
-ststart(unit)
-	register int unit;
+ststart(void)
 {
 }
 
@@ -283,10 +276,7 @@ ststart(unit)
  *	>0	if a fatal error
  */
 static int
-sterror(unit, sc, hp, stat)
-	int unit, stat;
-	register struct st_softc *sc;
-	register struct hp_device *hp;
+sterror(int unit, struct st_softc *sc, struct hp_device *hp, int stat)
 {
 	int cond = 1;
 
@@ -321,9 +311,7 @@ sterror(unit, sc, hp, stat)
 }
 
 int
-stintr(unit, stat)
-	register int unit;
-	int stat;
+stintr(void)
 {
 }
 
@@ -333,8 +321,7 @@ stintr(unit, stat)
  */
 
 char *
-sense_key(key)
-	int key;
+sense_key(int key)
 {
 	if (key == 0)
 		return("No Sense");
@@ -365,15 +352,12 @@ static struct scsi_fmt_cdb st_cmd  = { 6, 0, 0, 0, 0, 0, 0 };
 u_char sensebuf[8];
 
 int
-stread(dev, buf, size)
-	dev_t dev;
-	char *buf;
-	int   size;
+stread(dev_t dev, char *buf, int size)
 {
-	register int unit = stunit(dev);
-	register struct st_softc *sc = &st_softc[unit];
-	register struct scsi_fmt_cdb *cdb = &st_cmd;
-	register int nblk = size >> DEV_BSHIFT;
+	int unit = stunit(dev);
+	struct st_softc *sc = &st_softc[unit];
+	struct scsi_fmt_cdb *cdb = &st_cmd;
+	int nblk = size >> DEV_BSHIFT;
 	struct scsi_xsense *sp = (struct scsi_xsense *)sensebuf;
 	int ctlr, slave, stat;
 
@@ -410,16 +394,13 @@ stread(dev, buf, size)
 }
 
 int
-stwrite(dev, buf, size)
-	dev_t dev;
-	char *buf;
-	int   size;
+stwrite(dev_t dev, char *buf, int size)
 {
-	register int unit = stunit(dev);
-	register struct st_softc *sc = &st_softc[unit];
-	register struct scsi_fmt_cdb *cdb = &st_cmd;
+	int unit = stunit(dev);
+	struct st_softc *sc = &st_softc[unit];
+	struct scsi_fmt_cdb *cdb = &st_cmd;
 	struct scsi_xsense *sp = (struct scsi_xsense *)sensebuf;
-	register int nblk;
+	int nblk;
 	int ctlr, slave, stat;
 
 	nblk = size >> DEV_BSHIFT;
@@ -460,21 +441,16 @@ stwrite(dev, buf, size)
 }
 
 int
-stioctl(dev, cmd, data, flag, p)
-	dev_t dev;
-	int cmd;
-	caddr_t data;
-	int flag;
-	struct proc *p;
+stioctl(dev_t dev, int cmd, caddr_t data, int flag, struct proc *p)
 {
 }
 
-st_rewind(dev)
-	dev_t dev;
+int
+st_rewind(dev_t dev)
 {
-	register int unit = stunit(dev);
-	register struct st_softc *sc = &st_softc[unit];
-	register struct scsi_fmt_cdb *cdb = &st_cmd;
+	int unit = stunit(dev);
+	struct st_softc *sc = &st_softc[unit];
+	struct scsi_fmt_cdb *cdb = &st_cmd;
 	struct scsi_xsense *sp = (struct scsi_xsense *)sensebuf;
 	int ctlr, slave, stat;
 	int retry = 5;
@@ -514,12 +490,12 @@ st_rewind(dev)
 	}
 }
 
-st_write_EOF(dev)
-	dev_t dev;
+int
+st_write_EOF(dev_t dev)
 {
-	register int unit = stunit(dev);
-	register struct st_softc *sc = &st_softc[unit];
-	register struct scsi_fmt_cdb *cdb = &st_cmd;
+	int unit = stunit(dev);
+	struct st_softc *sc = &st_softc[unit];
+	struct scsi_fmt_cdb *cdb = &st_cmd;
 	int ctlr, slave, stat;
 	int marks = 1;
 
@@ -546,13 +522,12 @@ st_write_EOF(dev)
 }
 
 int
-st_skip(dev)
-	dev_t dev;
+st_skip(dev_t dev)
 {
-	register int unit = stunit(dev);
-	register struct st_softc *sc = &st_softc[unit];
-	register struct scsi_fmt_cdb *cdb = &st_cmd;
-	register int nfmk = 1;
+	int unit = stunit(dev);
+	struct st_softc *sc = &st_softc[unit];
+	struct scsi_fmt_cdb *cdb = &st_cmd;
+	int nfmk = 1;
 	struct scsi_xsense *sp = (struct scsi_xsense *)sensebuf;
 	int ctlr, slave, stat;
 
@@ -593,7 +568,6 @@ st_skip(dev)
  */
 
 int
-stdump(dev)
-	dev_t dev;
+stdump(dev_t dev)
 {
 }

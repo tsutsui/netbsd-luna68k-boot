@@ -77,8 +77,7 @@
  * we run through the statistics gathering routine as well.
  */
 /*ARGSUSED*/
-hardclock(pc, ps)
-	caddr_t pc;
-	int ps;
+void
+hardclock(caddr_t pc, int ps)
 {
 }

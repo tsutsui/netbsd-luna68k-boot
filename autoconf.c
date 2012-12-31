@@ -90,9 +90,10 @@ int	acdebug = 1;
 /*
  * Determine mass storage and memory configuration for a machine.
  */
-configure()
+void
+configure(void)
 {
-	register struct hp_hw *hw;
+	struct hp_hw *hw;
 	int found;
 
 	/*
@@ -120,10 +121,10 @@ configure()
 #define same_hw_ctlr(hw, hc) \
 	((hw)->hw_type == SCSI && dr_type((hc)->hp_driver, "sc"))
 
-find_controller(hw)
-	register struct hp_hw *hw;
+int
+find_controller(struct hp_hw *hw)
 {
-	register struct hp_ctlr *hc;
+	struct hp_ctlr *hc;
 	struct hp_ctlr *match_c;
 	caddr_t oaddr;
 	int sc;
@@ -195,10 +196,10 @@ find_controller(hw)
 	return(1);
 }
 
-find_device(hw)
-	register struct hp_hw *hw;
+int
+find_device(struct hp_hw *hw)
 {
-	register struct hp_device *hd;
+	struct hp_device *hd;
 	struct hp_device *match_d;
 	caddr_t oaddr;
 	int sc;
@@ -276,11 +277,11 @@ find_device(hw)
  * unused position instead of where it really is.  To save grief, non-
  * identifing devices should always be fully qualified.
  */
-find_slaves(hc)
-	register struct hp_ctlr *hc;
+void
+find_slaves(struct hp_ctlr *hc)
 {
-	register int s;
-	register struct hp_device *hd;
+	int s;
+	struct hp_device *hd;
 	struct hp_device *match_s;
 	int maxslaves = MAXSLAVES-1;
 	int new_s, new_c, old_s, old_c;
@@ -449,9 +450,8 @@ find_slaves(hc)
 	}
 }
 
-same_hw_device(hw, hd)
-	struct hp_hw *hw;
-	struct hp_device *hd;
+int
+same_hw_device(struct hp_hw *hw, struct hp_device *hd)
 {
 	int found = 0;
 
@@ -476,9 +476,10 @@ same_hw_device(hw, hd)
 	(hw)->hw_id   = id; \
 	(hw)->hw_name = name
 
-find_devs()
+void
+find_devs(void)
 {
-	register struct hp_hw *hw = sc_table;
+	struct hp_hw *hw = sc_table;
 	
 	setup_hw(hw, (char *) 0x51000000, 0x5, SIO,      0x5, "uPD7201A (SIO)");
 	hw->hw_id2 = 0; hw++;

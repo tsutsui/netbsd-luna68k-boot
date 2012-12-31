@@ -124,10 +124,10 @@ struct	iob {
  */
 struct devsw {
 	char	*dv_name;
-	int	(*dv_strategy)();
-	int	(*dv_open)();
-	int	(*dv_close)();
-	int	(*dv_ioctl)();
+	int	(*dv_strategy)(struct iob *, int);
+	int	(*dv_open)(struct iob *);
+	int	(*dv_close)(struct iob *);
+	int	(*dv_ioctl)(dev_t, ulong *);
 };
 
 struct devsw devsw[];

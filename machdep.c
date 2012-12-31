@@ -71,18 +71,20 @@
 #include <sys/param.h>
 #include <luna68k/include/reg.h>
 
-straytrap(addr)
-	register int addr;
+char *hexstr(int, int);
+
+void
+straytrap(int addr)
 {
 	printf("stray trap, addr 0x%x\n", addr);
 }
 
 int	*nofault = 0;
 
-badaddr(addr)
-	register caddr_t addr;
+int
+badaddr(caddr_t addr)
 {
-	register int i;
+	int i;
 	label_t	faultbuf;
 
 #ifdef lint
@@ -98,14 +100,12 @@ badaddr(addr)
 	return(0);
 }
 
-regdump(rp, sbytes)
-  int *rp; /* must not be register */
-  int sbytes;
+void
+regdump(int *rp /* must not be register */, int sbytes)
 {
 	static int doingdump = 0;
-	register int i;
+	int i;
 	int s;
-	extern char *hexstr();
 
 	if (doingdump)
 		return;
@@ -149,12 +149,9 @@ regdump(rp, sbytes)
 
 /*	#define KSADDR	((int *)&(((char *)&u)[(UPAGES-1)*NBPG]))	*/
 
-dumpmem(ptr, sz, ustack)
- register int *ptr;
- int sz;
+dumpmem(int *ptr, int sz, int ustack)
 {
-	register int i, val;
-	extern char *hexstr();
+	int i, val;
 
 	for (i = 0; i < sz; i++) {
 		if ((i & 7) == 0)
@@ -177,11 +174,10 @@ dumpmem(ptr, sz, ustack)
 }
 
 char *
-hexstr(val, len)
-	register int val;
+hexstr(int val, int len)
 {
 	static char nbuf[9];
-	register int x, i;
+	int x, i;
 
 	if (len > 8)
 		return("");

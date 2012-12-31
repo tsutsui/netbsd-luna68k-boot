@@ -88,12 +88,9 @@ extern u_char lbl_buff[];
  * Returns null on success and an error string on failure.
  */
 char *
-readdisklabel(dev, strat, lp)
-	int dev;
-	int (*strat)();
-	register struct disklabel *lp;
+readdisklabel(int dev, int (*strat)(struct iob *, int), struct disklabel *lp)
 {
-	register u_char *bp = lbl_buff;
+	u_char *bp = lbl_buff;
 	struct disklabel *dlp;
 	char *msg = NULL;
 	static struct scsi_fmt_cdb cdb = {

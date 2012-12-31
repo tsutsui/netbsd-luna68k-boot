@@ -115,13 +115,14 @@ struct bmd_rfcnt {
 #define SKIP_NEXT_LINE(addr)			( addr += (PL_WIDTH - SL_WIDTH) )
 
 
-void	bmd_add_new_line();
+void	bmd_add_new_line(void);
 
-void	bmd_draw_char();
-void	bmd_reverse_char();
-void	bmd_erase_char();
-void	bmd_erase_screen();
-void	bmd_scroll_screen();
+void	bmd_draw_char(char *, char *, int, int, int);
+void	bmd_reverse_char(char *, char *, int, int);
+void	bmd_erase_char(char *, char *, int, int);
+void	bmd_erase_screen(volatile u_long *);
+void	bmd_scroll_screen(volatile u_long *, volatile u_long *,
+	    int, int, int, int);
 
 
 struct bmd_linec {
@@ -145,7 +146,7 @@ struct bmd_softc {
 	struct bmd_linec *bc_bl;
 	char	bc_escseq[8];
 	char   *bc_esc;
-	void  (*bc_escape)();
+	void  (*bc_escape)(int);
 };
 
 #define	STAT_NORMAL	0x0000
@@ -155,9 +156,9 @@ struct bmd_softc {
 struct	bmd_softc bmd_softc;
 struct	bmd_linec bmd_linec[52];
 
-void	bmd_escape();
-void	bmd_escape_0();
-void	bmd_escape_1();
+void	bmd_escape(int);
+void	bmd_escape_0(int);
+void	bmd_escape_1(int);
 
 
 /*
@@ -165,10 +166,9 @@ void	bmd_escape_1();
  */
 
 void
-bmd_escape(c)
-	int c;
+bmd_escape(int c)
 {
-	register struct bmd_softc *bp = &bmd_softc;
+	struct bmd_softc *bp = &bmd_softc;
 
 	switch (c) {
 
@@ -185,11 +185,10 @@ bmd_escape(c)
 }
 
 void
-bmd_escape_0(c)
-	int c;
+bmd_escape_0(int c)
 {
-	register struct bmd_softc *bp = &bmd_softc;
-	register struct	bmd_linec *bq = bp->bc_bl;
+	struct bmd_softc *bp = &bmd_softc;
+	struct bmd_linec *bq = bp->bc_bl;
 
 	switch (c) {
 
@@ -207,7 +206,7 @@ bmd_escape_0(c)
 
 	case 'K':
 		if (bq->bl_col < bp->bc_xmax) {
-			register int col;
+			int col;
 			for (col = bq->bl_col; col < bp->bc_xmax; col++)
 				bmd_erase_char(bp->bc_raddr,
 					       bp->bc_waddr,
@@ -236,13 +235,12 @@ bmd_escape_0(c)
 }
 
 void
-bmd_escape_1(c)
-	int c;
+bmd_escape_1(int c)
 {
-	register struct bmd_softc *bp = &bmd_softc;
-	register struct	bmd_linec *bq = bp->bc_bl;
-	register int col = 0, row = 0;
-	register char *p;
+	struct bmd_softc *bp = &bmd_softc;
+	struct bmd_linec *bq = bp->bc_bl;
+	int col = 0, row = 0;
+	char *p;
 
 	switch (c) {
 
@@ -278,13 +276,14 @@ bmd_escape_1(c)
  * Entry Routine
  */
 
-bmdinit()
+void
+bmdinit(void)
 {
-	volatile register struct bmd_rfcnt *bmd_rfcnt = (struct bmd_rfcnt *) 0xB1000000;
-	volatile register long *bmd_bmsel = (long *)0xB1040000;
-	register struct bmd_softc *bp = &bmd_softc;
-	register struct bmd_linec *bq;
-	register int i;
+	volatile struct bmd_rfcnt *bmd_rfcnt = (struct bmd_rfcnt *) 0xB1000000;
+	volatile long *bmd_bmsel = (long *)0xB1040000;
+	struct bmd_softc *bp = &bmd_softc;
+	struct bmd_linec *bq;
+	int i;
 	struct bmd_rfcnt rfcnt;
 
 	/*
@@ -331,10 +330,10 @@ bmdinit()
 			 bq->bl_col, bp->bc_row);
 }
 
-bmdadjust(hcnt, vcnt)
-	short hcnt, vcnt;
+void
+bmdadjust(short hcnt, short vcnt)
 {
-	volatile register struct bmd_rfcnt *bmd_rfcnt = (struct bmd_rfcnt *) 0xB1000000;
+	volatile struct bmd_rfcnt *bmd_rfcnt = (struct bmd_rfcnt *) 0xB1000000;
 	struct bmd_rfcnt rfcnt;
 
 	printf("bmdadjust: hcnt = %d, vcnt = %d\n", hcnt, vcnt);
@@ -345,12 +344,12 @@ bmdadjust(hcnt, vcnt)
 	*bmd_rfcnt = rfcnt;
 }
 
-bmdputc(c)
-	register int c;
+int
+bmdputc(int c)
 {
-	register struct bmd_softc *bp = &bmd_softc;
-	register struct bmd_linec *bq = bp->bc_bl;
-	register int i;
+	struct bmd_softc *bp = &bmd_softc;
+	struct bmd_linec *bq = bp->bc_bl;
+	int i;
 
 	c &= 0x7F;
 							/* turn off cursole */
@@ -441,10 +440,11 @@ bmdputc(c)
 	return(c);
 }
 
-bmdclear()
+void
+bmdclear(void)
 {
-	register struct bmd_softc *bp = &bmd_softc;
-	register struct bmd_linec *bq = bp->bc_bl;
+	struct bmd_softc *bp = &bmd_softc;
+	struct bmd_linec *bq = bp->bc_bl;
 
 	bmd_erase_screen((u_long *) bp->bc_waddr);	/* clear screen */
 
@@ -462,7 +462,7 @@ bmdclear()
  */
 
 void
-bmd_add_new_line()
+bmd_add_new_line(void)
 {
 }
 
@@ -472,16 +472,11 @@ bmd_add_new_line()
  */
 
 void
-bmd_draw_char(raddr, waddr, col, row, c)
-	char *raddr;
-	char *waddr;
-	int col;
-	int row;
-	int c;
+bmd_draw_char(char *raddr, char *waddr, int col, int row, int c)
 {
-	volatile register u_short  *p,  *q, *fp;
-	volatile register u_long  *lp, *lq;
-	register int i;
+	volatile u_short  *p,  *q, *fp;
+	volatile u_long  *lp, *lq;
+	int i;
 
 	fp = &bmdfont[c][0];
 
@@ -537,15 +532,11 @@ bmd_draw_char(raddr, waddr, col, row, c)
 }
 
 void
-bmd_reverse_char(raddr, waddr, col, row)
-	char *raddr;
-	char *waddr;
-	int col;
-	int row;
+bmd_reverse_char(char *raddr, char *waddr, int col, int row)
 {
-	volatile register u_short  *p,  *q,  us;
-	volatile register u_long  *lp, *lq,  ul;
-	register int i;
+	volatile u_short  *p,  *q,  us;
+	volatile u_long  *lp, *lq,  ul;
+	int i;
 
 	switch (col%4) {
 
@@ -595,11 +586,7 @@ bmd_reverse_char(raddr, waddr, col, row)
 }
 
 void
-bmd_erase_char(raddr, waddr, col, row)
-	char *raddr;
-	char *waddr;
-	int col;
-	int row;
+bmd_erase_char(char *raddr, char *waddr, int col, int row)
 {
 	bmd_draw_char(raddr, waddr, col, row, 0);
 
@@ -612,10 +599,9 @@ bmd_erase_char(raddr, waddr, col, row)
  */
 
 void
-bmd_erase_screen(lp)
-	volatile register u_long *lp;
+bmd_erase_screen(volatile u_long *lp)
 {
-	register int i, j;
+	int i, j;
 
 	for (i = 0; i < SB_HIGHT; i++) {
 		for (j = 0; j < SL_WIDTH; j++)
@@ -627,12 +613,10 @@ bmd_erase_screen(lp)
 }
 
 void
-bmd_scroll_screen(lp, lq, xmin, xmax, ymin, ymax)
-	volatile register u_long *lp;
-	volatile register u_long *lq;
-	int xmin, xmax, ymin, ymax;
+bmd_scroll_screen(volatile u_long *lp, volatile u_long *lq,
+    int xmin, int xmax, int ymin, int ymax)
 {
-	register int i, j;
+	int i, j;
 
 	lp += ((PL_WIDTH * FB_HIGHT) * (ymin + 1));
 	lq += ((PL_WIDTH * FB_HIGHT) *  ymin);

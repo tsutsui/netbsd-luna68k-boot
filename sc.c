@@ -84,8 +84,8 @@
 #define SCSI_IPL	2
 #define SCSI_ID		7
 
-int	scinit(), scstart(), scgo(), scintr(), scdone();
-void	screset();
+int	scinit(struct hp_ctlr *), scstart(void), scgo(void), scintr(void), scdone(void);
+void	screset(int);
 struct	driver scdriver = {
 	scinit, "sc", scstart, scgo, scintr, scdone
 };
@@ -97,11 +97,10 @@ struct	scsi_softc scsi_softc[NSC];
  */
 
 int
-scinit(hc)
-	register struct hp_ctlr *hc;
+scinit(struct hp_ctlr *hc)
 {
-	register struct scsi_softc *hs = &scsi_softc[hc->hp_unit];
-	register int i;
+	struct scsi_softc *hs = &scsi_softc[hc->hp_unit];
+	int i;
 
 	hc->hp_ipl    = SCSI_IPL;
 	hs->sc_hc     = hc;
@@ -124,11 +123,10 @@ scinit(hc)
 }
 
 void
-screset(unit)
-	register int unit;
+screset(int unit)
 {
-	register struct scsi_softc *hs = &scsi_softc[unit];
-	volatile register struct scsidevice *hd =
+	struct scsi_softc *hs = &scsi_softc[unit];
+	volatile struct scsidevice *hd =
 				(struct scsidevice *)hs->sc_hc->hp_addr;
 
 	printf("sc%d: ", unit);
@@ -171,9 +169,7 @@ screset(unit)
  */
 
 int
-issue_select(hd, target)
-	volatile register struct scsidevice *hd;
-	u_char target;
+issue_select(volatile struct scsidevice *hd, u_char target)
 {
 	hd->scsi_pctl = 0;
 	hd->scsi_temp = (1 << SCSI_ID) | (1 << target);
@@ -201,11 +197,8 @@ issue_select(hd, target)
  */
 
 int
-ixfer_start(hd, len, phase, wait)
-	volatile register struct scsidevice *hd;
-	int len;
-	u_char phase;
-	register int wait;
+ixfer_start(volatile struct scsidevice *hd, int len, u_char phase,
+    int wait;
 {
 	hd->scsi_tch  = ((len & 0xff0000) >> 16);
 	hd->scsi_tcm  = ((len & 0x00ff00) >>  8);
@@ -215,10 +208,7 @@ ixfer_start(hd, len, phase, wait)
 }
 
 int
-ixfer_out(hd, len, buf)
-	volatile register struct scsidevice *hd;
-	int len;
-	register u_char *buf;
+ixfer_out(volatile struct scsidevice *hd, int len, u_char *buf)
 {
 	for(; len > 0; len--) {
 		while (hd->scsi_ssts & SSTS_DREG_FULL) {
@@ -229,10 +219,7 @@ ixfer_out(hd, len, buf)
 }
 
 int
-ixfer_in(hd, len, buf)
-	volatile register struct scsidevice *hd;
-	int len;
-	register u_char *buf;
+ixfer_in(volatile struct scsidevice *hd, int len, u_char *buf)
 {
 	for (; len > 0; len--) {
 		int i;
@@ -249,16 +236,11 @@ ixfer_in(hd, len, buf)
  */
 
 int
-scrun(ctlr, slave, cdb, cdblen, buf, len, lock)
-	int ctlr, slave;
-	u_char *cdb;
-	int cdblen;
-	u_char *buf;
-	int len;
-	int *lock;
+scrun(int ctlr, int slave, u_char *cdb, int cdblen, u_char *buf, int len,
+    int *lock)
 {
-	register struct scsi_softc *hs = &scsi_softc[ctlr];
-	volatile register struct scsidevice *hd = 
+	struct scsi_softc *hs = &scsi_softc[ctlr];
+	volatile struct scsidevice *hd = 
 		(struct scsidevice *) hs->sc_hc->hp_addr;
 
 	if (hd->scsi_ssts & (SSTS_INITIATOR|SSTS_TARGET|SSTS_BUSY))
@@ -284,10 +266,9 @@ scrun(ctlr, slave, cdb, cdblen, buf, len, lock)
 }
 
 int
-scfinish(ctlr)
-	int ctlr;
+scfinish(int ctlr)
 {
-	register struct scsi_softc *hs = &scsi_softc[ctlr];
+	struct scsi_softc *hs = &scsi_softc[ctlr];
 	int status = hs->sc_stat;
 
 	hs->sc_flags  = 0;
@@ -307,9 +288,7 @@ scfinish(ctlr)
 }
 
 int
-scabort(hs, hd)
-	register struct scsi_softc *hs;
-	volatile register struct scsidevice *hd;
+scabort(struct scsi_softc *hs, volatile struct scsidevice *hd)
 {
 	int len;
 	u_char junk;
@@ -375,8 +354,7 @@ out:
  */
 
 int
-scsi_test_unit_rdy(ctlr, slave, unit)
-	int ctlr, slave, unit;
+scsi_test_unit_rdy(int ctlr, int slave, int unit)
 {
 	static struct scsi_cdb6 cdb = { CMD_TEST_UNIT_READY };
 	int status, lock;
@@ -410,10 +388,7 @@ scsi_test_unit_rdy(ctlr, slave, unit)
 }
 
 int
-scsi_request_sense(ctlr, slave, unit, buf, len)
-	int ctlr, slave, unit;
-	u_char *buf;
-	unsigned len;
+scsi_request_sense(int ctlr, int slave, int unit, u_char *buf, unsigned int len)
 {
 	static struct scsi_cdb6 cdb = {	CMD_REQUEST_SENSE };
 	int status, lock;
@@ -456,11 +431,8 @@ scsi_request_sense(ctlr, slave, unit, buf, len)
 }
 
 int
-scsi_immed_command(ctlr, slave, unit, cdb, buf, len)
-	int ctlr, slave, unit;
-	struct scsi_fmt_cdb *cdb;
-	u_char *buf;
-	unsigned len;
+scsi_immed_command(int ctlr, int slave, int unit, struct scsi_fmt_cdb *cdb,
+    u_char *buf, unsigned int len)
 {
 	int lock, status;
 
@@ -494,8 +466,7 @@ scsi_immed_command(ctlr, slave, unit, cdb, buf, len)
 }
 
 int
-scsi_format_unit(ctlr, slave, unit)
-	int ctlr, slave, unit;
+scsi_format_unit(int ctlr, int slave, int unit)
 {
 	static struct scsi_cdb6 cdb = { CMD_FORMAT_UNIT, 0, 0, 0, 0, 0 };
 	int status, lock, count = 0;
@@ -539,17 +510,17 @@ scsi_format_unit(ctlr, slave, unit)
  */
 
 int
-scstart()
+scstart(void)
 {
 }
 
 int
-scgo()
+scgo(void)
 {
 }
 
 int
-scdone()
+scdone(void)
 {
 }
 
@@ -559,12 +530,12 @@ scdone()
  */
 
 int
-scintr()
+scintr(void)
 {
-	register struct scsi_softc *hs;
-	volatile register struct scsidevice *hd;
-	register u_char ints, temp;
-	register int i;
+	struct scsi_softc *hs;
+	volatile struct scsidevice *hd;
+	u_char ints, temp;
+	int i;
 	u_char *buf;
 	int len;
 

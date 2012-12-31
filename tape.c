@@ -82,9 +82,7 @@ dev_t nrst0 = 0x0004;
 u_char buff[512];
 
 int
-tape(argc, argv)
-	int   argc;
-	char *argv[];
+tape(int argc, char *argv[])
 {
 	int size, count;
 	u_long *p = (u_long *) buff;

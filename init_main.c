@@ -103,7 +103,8 @@ char *argv[MAXARGS];
 
 char  prompt[16];
 
-main()
+void
+main(void)
 {
 	int i, status;
 	int *p;
@@ -173,10 +174,10 @@ main()
 }
 
 int
-get_plane_numbers()
+get_plane_numbers(void)
 {
-	register int r = ROM_plane;
-	register int n = 0;
+	int r = ROM_plane;
+	int n = 0;
 
 	for (; r ; r >>= 1)
 		if (r & 0x1)
@@ -186,8 +187,7 @@ get_plane_numbers()
 }
 
 int
-reorder_dipsw(dipsw)
-	int dipsw;
+reorder_dipsw(int dipsw)
 {
 	int i, sw = 0;
 

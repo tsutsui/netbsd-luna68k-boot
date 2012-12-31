@@ -74,21 +74,21 @@
 #include "cons.h"
 #include "romvec.h"
 
-romcnprobe(cp)
-	struct consdev *cp;
+void
+romcnprobe(struct consdev *cp)
 {
 	cp->cn_tp  = 0;
 	cp->cn_dev = 0;
 	cp->cn_pri = CN_NORMAL;
 }
 
-romcninit(cp)
-	struct consdev *cp;
+void
+romcninit(struct consdev *cp)
 {
 }
 
-romcngetc(dev)
-	dev_t dev;
+int
+romcngetc(dev_t dev)
 {
 	int c;
 
@@ -99,9 +99,8 @@ romcngetc(dev)
 	return(c);
 }
 
-romcnputc(dev, c)
-	dev_t dev;
-	int c;
+void
+romcnputc(dev_t dev, int c)
 {
 	ROM_putchar(c);
 }

@@ -74,11 +74,10 @@
  */
 
 int
-getline(prompt, buff)
-	char *prompt, *buff;
+getline(char *prompt, char *buff)
 {
-	register int c;
-	register char *p = buff;
+	int c;
+	char *p = buff;
 
 	printf("%s", prompt);
 

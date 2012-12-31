@@ -85,11 +85,10 @@
 u_char lbl_buff[LABEL_SIZE];
 
 u_short
-dkcksum(lp)
-	register struct disklabel *lp;
+dkcksum(struct disklabel *lp)
 {
-	register u_short *start, *end;
-	register u_short sum = 0;
+	u_short *start, *end;
+	u_short sum = 0;
 
 	start = (u_short *)lp;
 	end = (u_short *)&lp->d_partitions[lp->d_npartitions];
@@ -99,17 +98,15 @@ dkcksum(lp)
 }
 
 int
-disklabel(argc, argv)
-	int   argc;
-	char *argv[];
+disklabel(int argc, char *argv[])
 {
-	register struct scd_dk_label *omp = (struct scd_dk_label *) lbl_buff;
-	register struct disklabel    *bp  = (struct disklabel *)omp->dkl_pad;
-	register struct fs *fp = (struct fs *) lbl_buff;
-	register u_short *p;
-	register u_long chksum, count;
-	register char *q;
-	register int i, j;
+	struct scd_dk_label *omp = (struct scd_dk_label *) lbl_buff;
+	struct disklabel    *bp  = (struct disklabel *)omp->dkl_pad;
+	struct fs *fp = (struct fs *) lbl_buff;
+	u_short *p;
+	u_long chksum, count;
+	char *q;
+	int i, j;
 
 	if (argc < 2) {
 		printf("This command is required sub command !!\n");
@@ -310,11 +307,10 @@ disklabel(argc, argv)
 }
 
 int
-display(lp)
-	register struct disklabel *lp;
+display(struct disklabel *lp)
 {
-	register int i, j;
-	register struct partition *pp;
+	int i, j;
+	struct partition *pp;
 
 	if ((unsigned) lp->d_type < DKMAXTYPES)
 		printf("type: %s\n", dktypenames[lp->d_type]);

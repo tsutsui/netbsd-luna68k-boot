@@ -69,12 +69,12 @@
  */
 
 struct driver {
-	int	(*d_init)();
+	int	(*d_init)(void *);
 	char	*d_name;
-	int	(*d_start)();
-	int	(*d_go)();
-	int	(*d_intr)();
-	int	(*d_done)();
+	int	(*d_start)(void);
+	int	(*d_go)(void);
+	int	(*d_intr)(void);
+	int	(*d_done)(void);
 };
 
 struct hp_ctlr {

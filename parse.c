@@ -77,39 +77,37 @@
 
 /* for scsi.c */
 
-int scsi();
+int scsi(int, char **);
 
 /* for disklabel.c */
 
-int disklabel();
+int disklabel(int, char **);
 
 /* for boot.c */
 
-int boot();
+int boot(int, char **);
 
-int load();
+int load(int, char **);
 
-int how_to_boot();
+int how_to_boot(int, char **);
 
 /* for tape.c */
 
-int tape();
+int tape(int, char **);
 
 /* for fsdump.c */
 
-int fsdump();
-int fsrestore();
+int fsdump(int, char **);
+int fsrestore(int, char **);
 
 /* for screen.c */
 
-int screen();
+int screen(int, char **);
 
 int
-check_args(argc, argv)
-	int   argc;
-	char *argv[];
+check_args(int argc, char *argv[])
 {
-	register int i;
+	int i;
 
 	for ( i = 0; i < argc; i++)
 		printf("argv[%d] = \"%s\"\n", i, argv[i]);
@@ -118,16 +116,14 @@ check_args(argc, argv)
 }
 
 int
-exit_program(argc, argv)
-	int   argc;
-	char *argv[];
+exit_program(int argc, char *argv[])
 {
 	return(ST_EXIT);
 }
 
 struct command_entry {
 	char *name;
-	int (*func)();
+	int (*func)(int, char **);
 };
 
 struct command_entry entries[] = {
@@ -150,11 +146,9 @@ struct command_entry entries[] = {
 
 
 int 
-parse(argc, argv)
-	int   argc;
-	char *argv[];
+parse(int argc, char *argv[])
 {
-	register int i, status = ST_NOTFOUND;
+	int i, status = ST_NOTFOUND;
 
 	for (i = 0; entries[i].name != (char *) 0; i++) {
 		if (!strcmp(argv[0], entries[i].name)) {
@@ -172,12 +166,11 @@ parse(argc, argv)
  * getargs -- make argument arrays
  */
 
-getargs(buffer, argv, maxargs)
-	char buffer[], *argv[];
-	int  maxargs;
+int
+getargs(char buffer[], char *argv[], int maxargs)
 {
-	register int   n = 0;
-	register char *p = buffer;
+	int n = 0;
+	char *p = buffer;
 
 	argv[n++] = p;
 	while (*p != '\0') {

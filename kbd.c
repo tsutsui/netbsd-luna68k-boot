@@ -211,10 +211,10 @@ int	shift_flag = 0;
 int	ctrl_flag  = 0;
 int	meta_flag  = 0;
 
-kbd_decode(code)
-	register u_char code;
+int
+kbd_decode(u_char code)
 {
-	register unsigned int c, updown = 0;
+	unsigned int c, updown = 0;
 
 	if (code & 0x80)
 		updown = 1;

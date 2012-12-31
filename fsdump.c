@@ -99,14 +99,12 @@ char cons_buf[100];
 
 
 int
-fsdump(argc, argv)
-	int   argc;
-	char *argv[];
+fsdump(int argc, char *argv[])
 {
-	register int i, j, io;
-	register char *p;
-	register int status;
-	register int block, bytes;
+	int i, j, io;
+	char *p;
+	int status;
+	int block, bytes;
 	int scsi_id, blk, nblks, size, mark;
 	struct stat boot_stat;
 	struct	partition *pp;
@@ -224,12 +222,10 @@ fsdump(argc, argv)
 }
 
 int
-fsrestore(argc, argv)
-	int   argc;
-	char *argv[];
+fsrestore(int argc, char *argv[])
 {
-	register int i, j, status;
-	register int block, bytes;
+	int i, j, status;
+	int block, bytes;
 	int blk, nblks, size, mark;
 	struct	partition *pp;
 

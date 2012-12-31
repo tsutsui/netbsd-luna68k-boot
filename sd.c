@@ -86,7 +86,7 @@
 #include "device.h"
 
 
-int	sdinit(), sdstrategy(), sdstart(), sdustart(), sdgo(), sdintr();
+int	sdinit(struct hp_device *), sdstrategy(struct iob *, int), sdstart(void), sdustart(void), sdgo(void), sdintr(void);
 
 struct	driver sddriver = {
 	sdinit, "sd", sdstart, sdgo, sdintr,
@@ -127,15 +127,13 @@ struct scsi_fmt_cdb cap = {
 };
 
 int
-sdident(sc, hd)
-	struct sd_softc *sc;
-	struct hp_device *hd;
+sdident(struct sd_softc *sc, struct hp_device *hd)
 {
 	char idstr[32];
 	int unit;
-	register int ctlr, slave;
-	register int i;
-	register int tries = 10;
+	int ctlr, slave;
+	int i;
+	int tries = 10;
 
 	ctlr = hd->hp_ctlr;
 	slave = hd->hp_slave;
@@ -209,12 +207,11 @@ sdident(sc, hd)
 }
 
 int
-sdinit(hd)
-	register struct hp_device *hd;
+sdinit(struct hp_device *hd)
 {
-	register struct sd_softc *sc = &sd_softc[hd->hp_unit];
-	register struct disklabel *lp;
-	char *msg, *readdisklabel();
+	struct sd_softc *sc = &sd_softc[hd->hp_unit];
+	struct disklabel *lp;
+	char *msg, *readdisklabel(int, int (*)(struct iob *, int), struct disklabel *);
 
 #ifdef DEBUG
 	printf("sdinit: hd->hp_unit = %d\n", hd->hp_unit);
@@ -256,11 +253,10 @@ sdinit(hd)
 }
 
 int
-sdopen(io)
-	struct iob *io;
+sdopen(struct iob *io)
 {
-	register int unit = io->i_unit;
-	register struct disklabel *lp;
+	int unit = io->i_unit;
+	struct disklabel *lp;
 
 	if (unit < 0 || unit >= NSD)
 		return(-1);
@@ -280,9 +276,7 @@ static struct scsi_fmt_cdb cdb_write = {
 };
 
 int
-sdstrategy(io, func)
-	register struct iob *io;
-	register int func;
+sdstrategy(struct iob *io, int func)
 {
 	int unit = io->i_unit;
 	struct sd_softc *sc = &sd_softc[unit];
@@ -323,35 +317,30 @@ sdstrategy(io, func)
 }
 
 int
-sdustart()
+sdustart(void)
 {
 }
 
 int
-sdstart()
+sdstart(void)
 {
 }
 
 int
-sdgo()
+sdgo(void)
 {
 }
 
 int
-sdintr()
+sdintr(void)
 {
 }
 
 int
-sdread(dev, blk, nblk, buff, len)
-	dev_t dev;
-	u_int   blk;
-	u_int   nblk;
-	u_char *buff;
-	u_int   len;
+sdread(dev_t dev, u_int blk, u_int nblk, u_char *buff, u_int len)
 {
-	register int unit = sdunit(dev);
-	register int part = sdpart(dev);
+	int unit = sdunit(dev);
+	int part = sdpart(dev);
 	struct sd_softc *sc = &sd_softc[unit];
 	struct scsi_fmt_cdb *cdb;
 	int stat, ctlr, slave;
@@ -378,13 +367,11 @@ sdread(dev, blk, nblk, buff, len)
 }
 
 int
-sdioctl(dev, data)
-	dev_t dev;
-	u_long data[];
+sdioctl(dev_t dev, u_long data[])
 {
-	register int unit = sdunit(dev);
-	register int part = sdpart(dev);
-	register struct disklabel *lp;
+	int unit = sdunit(dev);
+	int part = sdpart(dev);
+	struct disklabel *lp;
 
 	if (unit < 0 || unit >= NSD)
 		return(0);

@@ -96,11 +96,7 @@ char	*trap_type[] = {
  * Called from the trap handler when a processor trap occurs.
  */
 /*ARGSUSED*/
-trap(type, code, v, frame)
-	int type;
-	unsigned code;
-	register unsigned v;
-	struct frame frame;
+trap(int type, unsigned int code, unsigned int v, struct frame frame)
 {
 	switch (type) {
 

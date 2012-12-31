@@ -98,12 +98,10 @@ struct scsi_fmt_cdb capacity = {
 
 
 int
-scsi(argc, argv)
-	int   argc;
-	char *argv[];
+scsi(int argc, char *argv[])
 {
-	register char *p;
-	register int i, status;
+	char *p;
+	int i, status;
 
 	if (argc < 2) {
 		printf("This command is required subcommand !!\n");
@@ -191,14 +189,9 @@ static struct scsi_fmt_cdb scsi_cdb = {
 };
 
 int
-scsi_read_raw(target, blk, nblk, buff, len)
-	u_int   target;
-	u_int   blk;
-	u_int   nblk;
-	u_char *buff;
-	u_int   len;
+scsi_read_raw(u_int target, u_int blk, u_int nblk, u_char *buff, u_int len)
 {
-	register struct scsi_fmt_cdb *cdb = &scsi_cdb;
+	struct scsi_fmt_cdb *cdb = &scsi_cdb;
 
 	cdb->cdb[0] = CMD_READ_EXT;
 	
@@ -217,10 +210,7 @@ scsi_read_raw(target, blk, nblk, buff, len)
 }
 
 int
-scsi_read(blk, buff, len)
-	u_int   blk;
-	u_char *buff;
-	u_int   len;
+scsi_read(u_int blk, u_char *buff, u_int len)
 {
 	u_int   nblk = len >> DEV_BSHIFT;
 	
@@ -228,12 +218,9 @@ scsi_read(blk, buff, len)
 }
 
 int
-scsi_write(blk, buff, len)
-	u_int   blk;
-	u_char *buff;
-	u_int   len;
+scsi_write(u_int blk, u_char *buff, u_int len)
 {
-	register struct scsi_fmt_cdb *cdb = &scsi_cdb;
+	struct scsi_fmt_cdb *cdb = &scsi_cdb;
 
 	cdb->cdb[0] = CMD_WRITE_EXT;
 	

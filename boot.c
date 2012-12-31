@@ -85,7 +85,7 @@ extern struct KernInter	*kiff;
 int howto;
 int devtype = MAKEBOOTDEV(4, 0, 6, 0, 0);
 
-char *copyunix();
+char *copyunix(int);
 
 struct exec header;
 char default_file[] = "sd(0,0)vmunix";
@@ -105,13 +105,11 @@ char *how_to_info[] = {
 #ifdef TAPE /* A.Kojima */
 extern dev_t  rst0;
 extern dev_t nrst0;
-char *stcopyunix();
+char *stcopyunix(void);
 #endif
 
 int
-how_to_boot(argc, argv)
-	int   argc;
-	char *argv[];
+how_to_boot(int argc, char *argv[])
 {
 	int i, h = howto;
 
@@ -133,12 +131,11 @@ how_to_boot(argc, argv)
 }
 
 int
-get_boot_device(s)
-	char *s;
+get_boot_device(char *s)
 {
-	register int unit = 0;
-	register int part = 0;
-	register char *p = s;
+	int unit = 0;
+	int part = 0;
+	char *p = s;
 
 	while (*p != '(') {
 		if (*p == '\0')
@@ -167,11 +164,9 @@ error:
 }
 
 int
-boot(argc, argv)
-	int   argc;
-	char *argv[];
+boot(int argc, char *argv[])
 {
-	register int io;
+	int io;
 	char *line;
 
 	if (argc < 2)
@@ -199,11 +194,9 @@ boot(argc, argv)
 }
 
 int
-load(argc, argv)
-	int   argc;
-	char *argv[];
+load(int argc, char *argv[])
 {
-	register int io;
+	int io;
 	char *line;
 
 	if (argc < 2)
@@ -222,12 +215,11 @@ load(argc, argv)
 }
 
 int
-bootunix(howto, devtype, io)
-	register howto;		/* d7 contains boot flags */
-	register devtype;	/* d6 contains boot device */
-	register io;
+bootunix(int howto, int devtype, int io)
+/*	int howto;	*/	/* d7 contains boot flags */
+/*	int devtype;	*/	/* d6 contains boot device */
 {
-	register char *load;	/* a5 contains load addr for unix */
+	char *load;		/* a5 contains load addr for unix */
 
 	load = copyunix(io);
 
@@ -235,17 +227,16 @@ bootunix(howto, devtype, io)
 	asm("	movl %0,d7" : : "d" (howto));
 	asm("	movl %0,d6" : : "d" (devtype));
 	asm("	movl %0,a5" : : "a" (kiff));
-	(*((int (*)()) load))();
+	(*((int (*)(void)) load))();
 }
 
 char *
-copyunix(io)
-	register io;
+copyunix(int io)
 {
 
-	register int i;
-	register char *load;	/* a5 contains load addr for unix */
-	register char *addr;
+	int i;
+	char *load;		/* a5 contains load addr for unix */
+	char *addr;
 
 	/*
 	 * Read a.out file header
@@ -303,13 +294,13 @@ shread:
 
 #ifdef TAPE /* A.Kojima */
 int
-stbootunix(howto, devtype, skip)
-	register howto;		/* d7 contains boot flags */
-	register devtype;	/* d6 contains boot device */
-	register skip;		/* tape skip */
+stbootunix(int howto, int devtype, int skip)
+/*	int howto;	*/	/* d7 contains boot flags */
+/*	int devtype;	*/	/* d6 contains boot device */
+/*	int skip;	*/	/* tape skip */
 {
-	register int i;
-	register char *load;	/* a5 contains load addr for unix */
+	int i;
+	char *load;		/* a5 contains load addr for unix */
 
 	/*
 	 * Tape rewind and skip
@@ -327,16 +318,16 @@ stbootunix(howto, devtype, skip)
 	asm("	movl %0,d7" : : "d" (howto));
 	asm("	movl %0,d6" : : "d" (devtype));
 	asm("	movl %0,a5" : : "a" (kiff));
-	(*((int (*)()) load))();
+	(*((int (*)(void)) load))();
 }
 
 char *
-stcopyunix()
+stcopyunix(void)
 {
 
-	register int i;
-	register char *load;	/* a5 contains load addr for unix */
-	register char *addr;
+	int i;
+	char *load;		/* a5 contains load addr for unix */
+	char *addr;
 	u_char buf[0x400];
 
 	/*
@@ -397,9 +388,7 @@ shread:
 }
 
 int
-tread(addr, size)
-	int	addr;
-	int	size;
+tread(int addr, int size)
 {
 	static u_char	buf[512];
 	static int	head = 512;

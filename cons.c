@@ -84,13 +84,13 @@
 /* XXX - all this could be autoconfig()ed */
 #include "romvec.h"
 #if NBMC > 0
-int bmccnprobe(), bmccninit(), bmccngetc(), bmccnputc();
+int bmccnprobe(struct consdev *), bmccninit(struct consdev *), bmccngetc(dev_t), bmccnputc(dev_t, int);
 #endif
 #if NSIO > 0
-int siocnprobe(), siocninit(), siocngetc(), siocnputc();
+int siocnprobe(struct consdev *), siocninit(struct consdev *), siocngetc(dev_t), siocnputc(dev_t, int);
 #endif
 #if NROM > 0
-int romcnprobe(), romcninit(), romcngetc(), romcnputc();
+int romcnprobe(struct consdev *), romcninit(struct consdev *), romcngetc(dev_t), romcnputc(dev_t, int);
 #endif
 
 struct	consdev constab[] = {
@@ -111,9 +111,10 @@ struct	tty *constty = 0;	/* virtual console output device */
 struct	consdev *cn_tab;	/* physical console device info */
 struct	tty *cn_tty;		/* XXX: console tty struct for tprintf */
 
-cninit()
+void
+cninit(void)
 {
-	register struct consdev *cp;
+	struct consdev *cp;
 
 	/*
 	 * Collect information about all possible consoles
@@ -137,15 +138,16 @@ cninit()
 	(*cp->cn_init)(cp);
 }
 
-cngetc()
+int
+cngetc(void)
 {
 	if (cn_tab == NULL)
 		return(0);
 	return((*cn_tab->cn_getc)(cn_tab->cn_dev));
 }
 
-cnputc(c)
-	register int c;
+void
+cnputc(int c)
 {
 	if (cn_tab == NULL)
 		return;

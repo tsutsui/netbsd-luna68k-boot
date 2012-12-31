@@ -83,7 +83,8 @@ extern	int nplane;
 
 extern	struct rcvbuf	rcvbuf[];
 
-bmcintr()
+void
+bmcintr(void)
 {
 }
 
@@ -92,8 +93,8 @@ bmcintr()
  */
 #include <luna68k/luna68k/cons.h>
 
-bmccnprobe(cp)
-	struct consdev *cp;
+void
+bmccnprobe(struct consdev *cp)
 {
 	if ((dipsw1 & PS_BMC_CONS) == 0) {
 		cp->cn_pri = CN_DEAD;
@@ -111,18 +112,18 @@ bmccnprobe(cp)
 	cp->cn_pri = CN_NORMAL;
 }
 
-bmccninit(cp)
-	struct consdev *cp;
+void
+bmccninit(struct consdev *cp)
 {
 	sioinit();
 	bmdinit();
 }
 
-bmccngetc(dev)
-	dev_t dev;
+int
+bmccngetc(dev_t dev)
 {
-	register int c;
-	register int unit = 1;
+	int c;
+	int unit = 1;
 
 	while (RBUF_EMPTY(unit)) {
 		DELAY(10);
@@ -136,9 +137,8 @@ bmccngetc(dev)
  */
 }
 
-bmccnputc(dev, c)
-	dev_t dev;
-	int c;
+void
+bmccnputc(dev_t dev, int c)
 {
 	bmdputc(c);
 }

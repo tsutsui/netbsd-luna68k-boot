@@ -70,8 +70,8 @@
 
 #include "saio.h"
 
-devread(io)
-	register struct iob *io;
+int
+devread(struct iob *io)
 {
 	int cc;
 
@@ -82,8 +82,8 @@ devread(io)
 	return (cc);
 }
 
-devwrite(io)
-	register struct iob *io;
+int
+devwrite(struct iob *io)
 {
 	int cc;
 
@@ -94,49 +94,45 @@ devwrite(io)
 	return (cc);
 }
 
-devopen(io)
-	register struct iob *io;
+void
+devopen(struct iob *io)
 {
 
 	(*devsw[io->i_dev].dv_open)(io);
 }
 
-devclose(io)
-	register struct iob *io;
+void
+devclose(struct iob *io)
 {
 
 	(*devsw[io->i_dev].dv_close)(io);
 }
 
-devioctl(io, cmd, arg)
-	register struct iob *io;
-	int cmd;
-	caddr_t arg;
+int
+devioctl(struct iob *io, int cmd, caddr_t arg)
 {
 
 	return ((*devsw[io->i_dev].dv_ioctl)(io, cmd, arg));
 }
 
 /*ARGSUSED*/
-nullsys(io)
-	struct iob *io;
+void
+nullsys(struct iob *io)
 {
 
 	;
 }
 
 /*ARGSUSED*/
-nullioctl(io, cmd, arg)
-	struct iob *io;
-	int cmd;
-	caddr_t arg;
+int
+nullioctl(struct iob *io, int cmd, caddr_t arg)
 {
 
 	return (ECMD);
 }
 
-int	nullsys(), nullioctl();
-int	sdstrategy(), sdopen(), sdioctl();
+int	nullsys(struct iob *), nullioctl(struct iob *, int, caddr_t);
+int	sdstrategy(struct iob *, int), sdopen(struct iob *), sdioctl(dev_t, u_long data[]);
 
 struct devsw devsw[] = {
 	{ "sd",	sdstrategy,	sdopen,		nullsys,	nullioctl },
@@ -144,8 +140,7 @@ struct devsw devsw[] = {
 };
 
 dev_t
-make_device(str)
-	char *str;
+make_device(char *str)
 {
 	char *cp;
 	struct devsw *dp;

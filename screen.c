@@ -77,12 +77,10 @@
 #include "status.h"
 
 int
-screen(argc, argv)
-	int   argc;
-	char *argv[];
+screen(int argc, char *argv[])
 {
 	int i, j, flag;
-	register char *p;
+	char *p;
 	short hcnt, vcnt;
 
 	if (!strcmp(argv[1], "clear")) {
