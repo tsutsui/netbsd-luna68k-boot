@@ -5,7 +5,7 @@ CC=	cc ${DEBUG}
 LD=	ld
 CPP=	cpp
 
-S= ../..
+S= ../../../..
 
 INCLUDES= -I${.CURDIR} -I${.CURDIR}/$S 
 COPTS=	${INCLUDES} ${IDENT} -DKERNEL
