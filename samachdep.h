@@ -37,6 +37,7 @@
 
 #define	NSCSI		2
 #define NSD		8
+#define DK_NDRIVE	8
 
 #define MHZ_8		1
 #define MHZ_16		2
@@ -44,9 +45,32 @@
 #define MHZ_33		4
 #define MHZ_50		6
 
+struct consdev;
+struct frame;
+typedef struct label_t {
+	int val[15];
+} label_t;
+
 /* autoconf.c */
 extern int cpuspeed;
 void configure(void);
+void find_devs(void);
+
+/* bmc.c */
+void bmccnprobe(struct consdev *);
+void bmccninit(struct consdev *);
+int  bmccngetc(dev_t);
+void bmccnputc(dev_t, int);
+
+/* boot.c */
+extern int devtype;
+extern int howto;
+char *default_file;
+int boot(int, char **);
+int load(int, char **);
+int how_to_boot(int, char **);
+int bootunix(int, int, int);
+char *copyunix(int);
 
 /* clock.c */
 /* not yet */
@@ -54,35 +78,78 @@ void configure(void);
 /* cons.c */
 void cninit(void);
 int cngetc(void);
-int cnputc(int);
+void cnputc(int);
 
 /* devopen.c */
 extern	u_int opendev;
 int atoi(char *);
 
+/* disklabel.c */
+int disklabel(int, char **);
+
 /* exec.c */
 void exec_hp300(char *, u_long, int);
 
+/* fsdump.c */
+int fsdump(int, char **);
+int fsrestore(int, char **);
+
+/* getline.c */
+int getline(char *, char *);
+
+/* init_main.c */
+extern int nplane;
+
+/* locore.S */
+extern	u_int bootdev;
+extern int dipsw1, dipsw2;
+int setjmp(label_t *);
+int splhigh(void);
+void splx(int);
+int getsfc(void);
+int getdfc(void);
+
 /* machdep.c */
-extern	int userom;
-char *getmachineid(void);
-void romputchar(int);
-void transfer(char *, int, int, int, char *, char *);
-int trap(struct trapframe *);
+void straytrap(int);
+int badaddr(volatile void *);
+void regdump(int *, int);
 
 /* prf.c */
 int tgetchar(void);
 
-/* locore.S */
-extern	u_int bootdev;
-extern	int howto;
 
-/* machdep.c */
-int badaddr(void *);
+/* parse.c */
+int check_args(int, char **);
+int exit_program(int, char **);
+int parse(int, char **);
+int getargs(char *, char **, int);
+
+/* romcons.c */
+void romcnprobe(struct consdev *);
+void romcninit(struct consdev *);
+int  romcngetc(dev_t);
+void romcnputc(dev_t, int);
+
+/* screen.c */
+int screen(int, char **);
+
+/* scsi.c */
+int scsi(int, char **);
+
+/* sio.c */
+void siocnprobe(struct consdev *);
+void siocninit(struct consdev *);
+int  siocngetc(dev_t);
+void siocnputc(dev_t, int);
+
+/* tape.c */
+int tape(int, char **);
 
 /* tgets.c */
 int tgets(char *);
 
+/* trap.c */
+void trap(int, unsigned int, unsigned int, struct frame);
 
 #define DELAY(n)							\
 do {									\
