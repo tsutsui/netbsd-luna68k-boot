@@ -75,11 +75,9 @@
 
 #include <sys/param.h>
 #include <sys/systm.h>
-#include "rcvbuf.h"
-#include "preset.h"
-
-extern	int dipsw1;
-extern	int nplane;
+#include <luna68k/stand/boot/samachdep.h>
+#include <luna68k/stand/boot/rcvbuf.h>
+#include <luna68k/stand/boot/preset.h>
 
 extern	struct rcvbuf	rcvbuf[];
 
@@ -91,7 +89,7 @@ bmcintr(void)
 /*
  * Following are all routines needed for SIO to act as console
  */
-#include <luna68k/luna68k/cons.h>
+#include <dev/cons.h>
 
 void
 bmccnprobe(struct consdev *cp)
@@ -108,7 +106,6 @@ bmccnprobe(struct consdev *cp)
 
 	/* initialize required fields */
 	cp->cn_dev = 1;
-	cp->cn_tp  = 0;
 	cp->cn_pri = CN_NORMAL;
 }
 
