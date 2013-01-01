@@ -525,8 +525,6 @@ _lev6intr:
 	moveml	%sp@+,#0x0303
 	addql	#2,%sp
 	jra	rei
-ENTRY_NOPROFILE(_siointr)
-	rts
 
 
 /*
