@@ -296,7 +296,7 @@ LbeX1:
 Lbe0:
 	btst	#4,%a1@(8)		| long (type B) stack frame?
 	jne	Lbe4			| yes, go handle
-	movl	$a1@(4),%d1		| no, can use save PC
+	movl	%a1@(4),%d1		| no, can use save PC
 	btst	#14,%d0			| FB set?
 	jeq	Lbe3			| no, try FC
 	addql	#4,%d1			| yes, adjust address
