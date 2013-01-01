@@ -77,8 +77,7 @@
 
 #include <sys/param.h>
 #include <sys/systm.h>
-
-extern u_short bmdfont[][20];
+#include <luna68k/stand/boot/samachdep.h>
 
 #define isprint(c)	( c < 0x20 ? 0 : 1)
 
@@ -534,8 +533,8 @@ bmd_draw_char(char *raddr, char *waddr, int col, int row, int c)
 void
 bmd_reverse_char(char *raddr, char *waddr, int col, int row)
 {
-	volatile u_short  *p,  *q,  us;
-	volatile u_long  *lp, *lq,  ul;
+	volatile u_short  *p,  *q;
+	volatile u_long  *lp, *lq;
 	int i;
 
 	switch (col%4) {
