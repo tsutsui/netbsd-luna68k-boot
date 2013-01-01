@@ -85,9 +85,12 @@
  *  RFCNT register
  */
 
-struct bmd_rfcnt {
-	short	rfc_hcnt;
-	short	rfc_vcnt;
+union bmd_rfcnt {
+	struct {
+		short	rfc_hcnt;
+		short	rfc_vcnt;
+	} p;
+	uint32_t u;
 };
 
 
@@ -278,12 +281,12 @@ bmd_escape_1(int c)
 void
 bmdinit(void)
 {
-	volatile struct bmd_rfcnt *bmd_rfcnt = (struct bmd_rfcnt *) 0xB1000000;
+	volatile uint32_t *bmd_rfcnt = (uint32_t *) 0xB1000000;
 	volatile long *bmd_bmsel = (long *)0xB1040000;
 	struct bmd_softc *bp = &bmd_softc;
 	struct bmd_linec *bq;
 	int i;
-	struct bmd_rfcnt rfcnt;
+	union bmd_rfcnt rfcnt;
 
 	/*
 	 *  adjust plane position
@@ -291,9 +294,9 @@ bmdinit(void)
 
 	bp->bc_raddr = (char *) 0xB10C0008;		/* plane-0 hardware address */
 	bp->bc_waddr = (char *) 0xB1080008;		/* common bitmap hardware address */
-	rfcnt.rfc_hcnt = 7;				/* shift left   16 dot */
-	rfcnt.rfc_vcnt = -27;				/* shift down    1 dot */
-	*bmd_rfcnt = rfcnt;
+	rfcnt.p.rfc_hcnt = 7;				/* shift left   16 dot */
+	rfcnt.p.rfc_vcnt = -27;				/* shift down    1 dot */
+	*bmd_rfcnt = rfcnt.u;
 
 	bp->bc_stat  = STAT_NORMAL;
 
@@ -332,15 +335,15 @@ bmdinit(void)
 void
 bmdadjust(short hcnt, short vcnt)
 {
-	volatile struct bmd_rfcnt *bmd_rfcnt = (struct bmd_rfcnt *) 0xB1000000;
-	struct bmd_rfcnt rfcnt;
+	volatile uint32_t *bmd_rfcnt = (uint32_t *) 0xB1000000;
+	union bmd_rfcnt rfcnt;
 
 	printf("bmdadjust: hcnt = %d, vcnt = %d\n", hcnt, vcnt);
 
-	rfcnt.rfc_hcnt = hcnt;			/* shift left   16 dot */
-	rfcnt.rfc_vcnt = vcnt;			/* shift down    1 dot */
+	rfcnt.p.rfc_hcnt = hcnt;		/* shift left   16 dot */
+	rfcnt.p.rfc_vcnt = vcnt;		/* shift down    1 dot */
 
-	*bmd_rfcnt = rfcnt;
+	*bmd_rfcnt = rfcnt.u;
 }
 
 int
