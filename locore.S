@@ -68,6 +68,9 @@
  *	@(#)locore.s	8.1 (Berkeley) 6/10/93
  */
 
+/* For _C_LABEL() and friends. */
+#include <m68k/asm.h>
+
 #define	T_BUSERR	0
 #define	T_ADDRERR	1
 #define	T_ILLINST	2
@@ -188,26 +191,24 @@ Reset:
 	BADTRAP16		/* 64-255: user interrupt vectors */
 
 
-	.globl  start
-	.globl  _main
 	.globl	_etext,_edata,_end
 
 	START = 0x700000
 	STACK = 0x800000
 	DIPSW = 0x49000000
 
-start:
+ASENTRY_NOPROFILE(start)
 	movw	#PSL_HIGHIPL,%sr	| no interrupts
 	movl	#STACK,%sp		| set SP
 
-	movl	#_prgcore, %a2		| save program address
+	movl	#_C_LABEL(prgcore), %a2	| save program address
 	movl	#Reset, %a2@+		| save start of core
-	movl	#_end,  %a2@+		| save end of core
+	movl	#_C_LABEL(end),  %a2@+	| save end of core
 	movl	#STACK, %a2@		| save initial stack addr
 
 /* clear BSS area */
-	movl	#_edata,%a2		| start of BSS
-	movl	#_end,%a3		| end
+	movl	#_C_LABEL(edata),%a2	| start of BSS
+	movl	#_C_LABEL(end),%a3	| end
 Lbssclr:
 	clrb	%a2@+			| clear BSS
 	cmpl	%a2,%a3			| done?
@@ -216,10 +217,10 @@ Lbssclr:
 /* save address to goto ROM monitor */
 	movec	%vbr,%a0		| ROM vbr to %a0
 	movl	%a0@(NMIVEC),%d0	| restore NMIVEC
-	movl	#_gotoROM,%a0		| save to _gotoROM
+	movl	#_ASM_LABEL(gotoROM),%a0	| save to _gotoROM
 	movl	%d0,%a0@		|
 	movl	#Reset,%a0		| BP vbr to %a0
-	movl	#_exit,%a0@(NMIVEC)	| save address
+	movl	#_C_LABEL(exit),%a0@(NMIVEC)	| save address
 	
 
 /* switch vector tabel */
@@ -236,14 +237,14 @@ Lbssclr:
 	movw	%a0@,%d0
 	lsrl	#8,%d0
 	andl	#0xFF,%d0
-	movl	%d0,_dipsw1
+	movl	%d0,_C_LABEL(dipsw1)
 	movw	%a0@,%d0
 	andl	#0xFF,%d0
-	movl	%d0,_dipsw2
+	movl	%d0,_C_LABEL(dipsw2)
 
 /* final setup for C code */
 	movw	#PSL_LOWIPL,%sr		| no interrupts
-	jsr	_main			| lets go
+	jsr	_C_LABEL(main)		| lets go
 	jsr	start
 
 /*
@@ -252,13 +253,12 @@ Lbssclr:
 
 	ROM_VBR = 0
 
-	.globl	_exit
-
-_exit:
+ENTRY_NOPROFILE(exit)
+GLOBAL(_rtt)
 	movw	#PSL_HIGHIPL,%sr	| no interrupts
 	movl	#ROM_VBR,%a0
 	movec	%a0,%vbr
-	movl	#_gotoROM,%a0
+	movl	#_ASM_LABEL(gotoROM),%a0
 	movl	%a0@,%a1
 	jmp	%a1@
 
@@ -266,12 +266,11 @@ _exit:
  * Trap/interrupt vector routines
  */ 
 
-	.globl	_trap,_nofault,_longjmp
 _buserr:
-	tstl	_nofault		| device probe?
+	tstl	_C_LABEL(nofault)	| device probe?
 	jeq	_addrerr		| no, handle as usual
-	movl	_nofault,%sp@-		| yes,
-	jbsr	_longjmp		|  longjmp(nofault)
+	movl	_C_LABEL(nofault),%sp@-	| yes,
+	jbsr	_C_LABEL(longjmp)	|  longjmp(nofault)
 _addrerr:
 	clrw	%sp@-			| pad SR to longword
 	moveml	#0xFFFF,%sp@-		| save user registers
@@ -337,7 +336,7 @@ Lisaerr:
 Lisberr:
 	movl	#T_BUSERR,%sp@-		| mark bus error
 Lbexit:
-	jbsr	_trap			| handle the error
+	jbsr	_C_LABEL(trap)		| handle the error
 	lea	%sp@(12),%sp		| pop value args
 	movl	%sp@(60),%a0		| restore user SP
 	movl	%a0,%usp		|   from save area
@@ -433,7 +432,7 @@ Lfptnull:
 	clrl	%sp@-		| push dummy FPSR
 #endif
 	movl	#T_FPERR,%sp@-	| push type arg
-	jbsr	_trap		| call trap
+	jbsr	_C_LABEL(trap)	| call trap
 	lea	%sp@(12),%sp	| pop value args
 	movl	%sp@(60),%a0	| restore
 	movl	%a0,%usp	|   user SP
@@ -451,7 +450,7 @@ _fault:
 	clrl	%sp@-		| no VA arg
 	clrl	%sp@-		| or code arg
 	movl	%d0,%sp@-	| push trap type
-	jbsr	_trap		| handle trap
+	jbsr	_C_LABEL(trap)	| handle trap
 	lea	%sp@(12),%sp	| pop value args
 	movl	%sp@(60),%a0	| restore
 	movl	%a0,%usp	|   user SP
@@ -459,13 +458,12 @@ _fault:
 	addql	#6,%sp		| pop SP and pad word
 	jra	rei		| all done
 
-	.globl	_straytrap
 _badtrap:
 	clrw	%sp@-
 	moveml	#0xC0C0,%sp@-
 	movw	%sp@(24),%sp@-
 	clrw	%sp@-
-	jbsr	_straytrap
+	jbsr	_C_LABEL(straytrap)
 	addql	#4,%sp
 	moveml	%sp@+,#0x0303
 	addql	#2,%sp
@@ -485,15 +483,16 @@ _badtrap:
  *	Level 6:	Internal SIO used uPD7201A
  *	Level 7:	Non-maskable: Abort Key (Dispatched vector to ROM monitor)
  */
-	.globl	_scintr, __siointr, _hardclock
 
 _lev2intr:
 	clrw	%sp@-
 	moveml	#0xC0C0,%sp@-
-	jbsr	_scintr
+	jbsr	_C_LABEL(scintr)
 	moveml	%sp@+,#0x0303
 	addql	#2,%sp
 	jra	rei
+ENTRY_NOPROFILE(scintr)
+	rts
 
 _lev3intr:
 	clrw	%sp@-
@@ -510,19 +509,23 @@ _lev5intr:
 	lea	%sp@(16),%a1		| get pointer to PS
 	movl	%a1@,%sp@-		| push padded PS
 	movl	%a1@(4),%sp@-		| push PC
-	jbsr	_hardclock		| call generic clock int routine
+	jbsr	_C_LABEL(hardclock)	| call generic clock int routine
 	addql	#8,%sp			| pop params
 	moveml	%sp@+,#0x0303		| restore scratch regs
 	addql	#2,%sp			| pop pad word
 	jra	rei			| all done
+ENTRY_NOPROFILE(hardclock)
+	rts
 
 _lev6intr:
 	clrw	%sp@-
 	moveml	#0xC0C0,%sp@-
-	jbsr	__siointr
+	jbsr	_C_LABEL(_siointr)
 	moveml	%sp@+,#0x0303
 	addql	#2,%sp
 	jra	rei
+ENTRY_NOPROFILE(_siointr)
+	rts
 
 
 /*
@@ -622,30 +625,6 @@ rei:					| dummy Entry of rei
 #endif
 	rte				| real return
 
-
-/*
- * Primitives
- */ 
-
-#ifdef GPROF
-#ifdef __GNUC__
-#define	ENTRY(name) \
-	.globl _##name; _##name: link a6,#0; jbsr mcount; unlk a6
-#define ALTENTRY(name, rname) \
-	ENTRY(name); jra rname+12
-#else
-#define	ENTRY(name) \
-	.globl _##name; _##name: jbsr mcount
-#define ALTENTRY(name, rname) \
-	ENTRY(name); jra rname+6
-#endif
-#else
-#define	ENTRY(name) \
-	.globl _##name; _##name:
-#define ALTENTRY(name, rname) \
-	.globl _##name; _##name:
-#endif
-
 /*
  * non-local gotos
  */
@@ -673,11 +652,10 @@ ENTRY(longjmp)
 	moveq	#1,%d0
 	rts
 
-	.globl	_getsfc, _getdfc
-_getsfc:
+ENTRY_NOPROFILE(getsfc)
 	movc	%sfc,%d0
 	rts
-_getdfc:
+ENTRY_NOPROFILE(getdfc)
 	movc	%dfc,%d0
 	rts
 
@@ -763,19 +741,17 @@ ENTRY(spl7)
 /*
  * Memory Infomation Field for secondary booter memory allocator
  */
-	.globl  _prgcore
-	.globl	_dipsw1,_dipsw2
 
-_prgcore:
+GLOBAL(prgcore)
 	.long	0
 	.long	0
 	.long	0
 
-_gotoROM:
+gotoROM:
 	.long	0
 
-_dipsw1:
+GLOBAL(dipsw1)
 	.long	0
 
-_dipsw2:
+GLOBAL(dipsw2)
 	.long	0
