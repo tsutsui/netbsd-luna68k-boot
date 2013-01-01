@@ -69,29 +69,14 @@
  */
 
 #include <sys/param.h>
-#include <sys/systm.h>
-#include <sys/buf.h>
-#include <sys/ioctl.h>
-#include <sys/tty.h>
-#include <sys/file.h>
-#include <sys/conf.h>
-#include <luna68k/luna68k/cons.h>
+#include <dev/cons.h>
+#include <luna68k/stand/boot/samachdep.h>
 
-#define NBMC	1
-#define	NSIO	1
-#define	NROM	1
+#define NBMC	0
+#define NSIO	0
+#define NROM	1
 
 /* XXX - all this could be autoconfig()ed */
-#include "romvec.h"
-#if NBMC > 0
-int bmccnprobe(struct consdev *), bmccninit(struct consdev *), bmccngetc(dev_t), bmccnputc(dev_t, int);
-#endif
-#if NSIO > 0
-int siocnprobe(struct consdev *), siocninit(struct consdev *), siocngetc(dev_t), siocnputc(dev_t, int);
-#endif
-#if NROM > 0
-int romcnprobe(struct consdev *), romcninit(struct consdev *), romcngetc(dev_t), romcnputc(dev_t, int);
-#endif
 
 struct	consdev constab[] = {
 #if NBMC > 0
@@ -109,7 +94,6 @@ struct	consdev constab[] = {
 
 struct	tty *constty = 0;	/* virtual console output device */
 struct	consdev *cn_tab;	/* physical console device info */
-struct	tty *cn_tty;		/* XXX: console tty struct for tprintf */
 
 void
 cninit(void)
@@ -134,7 +118,6 @@ cninit(void)
 	/*
 	 * Turn on console
 	 */
-	cn_tty = cp->cn_tp;
 	(*cp->cn_init)(cp);
 }
 
