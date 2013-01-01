@@ -72,8 +72,8 @@
 #include <dev/cons.h>
 #include <luna68k/stand/boot/samachdep.h>
 
-#define NBMC	0
-#define NSIO	0
+#define NBMC	1
+#define NSIO	1
 #define NROM	1
 
 /* XXX - all this could be autoconfig()ed */
