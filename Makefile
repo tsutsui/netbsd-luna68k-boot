@@ -1,49 +1,83 @@
+#	$NetBSD$
 #	@(#)Makefile	8.2 (Berkeley) 8/15/93
 
-AS=	as ${DEBUG}
-CC=	cc ${DEBUG}
-LD=	ld
-CPP=	cpp
+NOMAN= # defined
 
-S= ../../../..
+.include <bsd.own.mk>
+.include <bsd.sys.mk>
+
+S= ${.CURDIR}/../../../..
 
 INCLUDES= -I${.CURDIR} -I${.CURDIR}/$S 
 COPTS=	${INCLUDES} ${IDENT} -DKERNEL
-CFLAGS=	-g -O
+CPPFLAGS+=	-nostdinc -D_STANDALONE
+#CPPFLAGS+=	-D_DEBUG
+CPPFLAGS+=	-I${.OBJDIR} -I${S} -I${S}/arch -I${LIBSADIR}
+#CPPFLAGS+=	-DSUPPORT_DHCP -DSUPPORT_BOOTP
+#CPPFLAGS+=	-DBOOTP_DEBUG -DNETIF_DEBUG -DETHER_DEBUG -DNFS_DEBUG
+#CPPFLAGS+=	-DRPC_DEBUG -DRARP_DEBUG -DNET_DEBUG -DDEBUG -DPARANOID
 
-LDFLAGS= -N
+CFLAGS=		-Os -msoft-float
+CFLAGS+=	-ffreestanding
+CFLAGS+=	-Wall -Werror
+CFLAGS+=	-Wstrict-prototypes -Wmissing-prototypes -Wpointer-arith
+CFLAGS+=	-Wno-pointer-sign
 
-NOMAN=
+LDSCRIPT=	${.CURDIR}/boot.ldscript
+LINKFORMAT=	-static -N -T ${LDSCRIPT}
 
-LIBS=	-L/usr/libexec/gcc2 -lgcc -lc
-
-SRCS=	trap.c machdep.c romcons.c sio.c bmc.c cons.c subr_prf.c kern_clock.c \
-	boot.c sys.c conf.c ufs_disksubr.c disklabel.c scsi.c sc.c sd.c st.c\
-	screen.c bmd.c font.c tape.c fsdump.c kbd.c \
-	getline.c parse.c ioconf.c autoconf.c
-
-#OBJ=	trap.o machdep.o romcons.o sio.o bmc.o cons.o subr_prf.o kern_clock.o \
-#	sys.o conf.o ufs_disksubr.o disklabel.o scsi.o sc.o sd.o st.o\
-#	screen.o bmd.o font.o ioconf.o autoconf.o tape.o fsdump.o kbd.o \
-#	boot.o getline.o parse.o
-
-.PATH:	${.CURDIR}/../font
+SRCS=	locore.S
+SRCS+=	init_main.c autoconf.c ioconf.c
+SRCS+=	trap.c
+SRCS+=	devopen.c
+SRCS+=	conf.c
+SRCS+=	machdep.c
+SRCS+=	getline.c parse.c 
+#SRCS+=	boot.c
+SRCS+=	cons.c prf.c tgets.c
+SRCS+=	romcons.c
+#SRCS+=	sio.c
+#SRCS+=	bmc.c bmd.c screen.c font.c kbd.c
+#SRCS+=	scsi.c sd.c
+#SRCS+=	st.c tape.c
+#SRCS+=	disklabel.c fsdump.c
 
 PROG=   boot
 
-boot:	init_main.o locore.o ${OBJS}
-	${LD} ${LDFLAGS} -e Reset -T 700000 -o boot locore.o ${OBJS} init_main.o ${LIBS}
+SRCS+=          vers.c
+CLEANFILES+=    vers.c
 
-locore.o: vectors.h locore.s
-	cp ${.CURDIR}/locore.s locore.c
-	${CC} -traditional -E -DLOCORE -DFPCOPROC ${COPTS} locore.c > locore.i
-	${AS} -o locore.o ${AHEADS} locore.i
-	@rm -f locore.c locore.i
+### find out what to use for libkern
+KERN_AS=	library
+.include "${S}/lib/libkern/Makefile.inc"
 
-install: boot
-	cp boot /nn ; sync ; sync ; sync ; sync
+### find out what to use for libz
+Z_AS=		library
+.include "${S}/lib/libz/Makefile.inc"
 
-clean:
-	rm -f boot tags a.out *.o locore.i *~
+### find out what to use for libsa
+SA_AS=		library
+SAMISCMAKEFLAGS+=SA_USE_LOADFILE=yes SA_USE_CREAD=yes
+.include "${S}/lib/libsa/Makefile.inc"
 
+LIBS=	${SALIB} ${ZLIB} ${KERNLIB}
+
+.PHONY: vers.c
+vers.c: ${.CURDIR}/version
+	${HOST_SH} ${S}/conf/newvers_stand.sh ${${MKREPRO} == "yes" :?:-D} \
+	    ${.CURDIR}/version "${MACHINE}"
+
+${PROG}: ${LDSCRIPT} ${OBJS} ${LIBS}
+	${LD} ${LINKFORMAT} -x -o ${PROG}.elf ${OBJS} ${LIBS}
+	${ELF2AOUT} ${PROG}.elf ${PROG}.aout
+	mv ${PROG}.aout ${PROG}
+
+CLEANFILES+=	${PROG}.map ${PROG}.elf ${PROG}.gz
+
+cleandir distclean: .WAIT cleanlibdir
+
+cleanlibdir:
+	-rm -rf lib
+
+.include <bsd.klinks.mk>
 .include <bsd.prog.mk>
