@@ -73,36 +73,9 @@
  * by A.Fujita, JAN-30-1992
  */
 
-#include "status.h"
-
-/* for scsi.c */
-
-int scsi(int, char **);
-
-/* for disklabel.c */
-
-int disklabel(int, char **);
-
-/* for boot.c */
-
-int boot(int, char **);
-
-int load(int, char **);
-
-int how_to_boot(int, char **);
-
-/* for tape.c */
-
-int tape(int, char **);
-
-/* for fsdump.c */
-
-int fsdump(int, char **);
-int fsrestore(int, char **);
-
-/* for screen.c */
-
-int screen(int, char **);
+#include <lib/libkern/libkern.h>
+#include <luna68k/stand/boot/samachdep.h>
+#include <luna68k/stand/boot/status.h>
 
 int
 check_args(int argc, char *argv[])
@@ -127,19 +100,19 @@ struct command_entry {
 };
 
 struct command_entry entries[] = {
-{ "b",		boot         },
-{ "boot",	boot         },
+//{ "b",		boot         },
+//{ "boot",	boot         },
 { "chkargs",	check_args   },
-{ "disklabel",	disklabel    },
+//{ "disklabel",	disklabel    },
 { "exit",	exit_program },
-{ "fsdump",	fsdump       },
-{ "fsrestore",	fsrestore    },
-{ "howto",	how_to_boot  },
-{ "load",       load         },
-{ "screen",	screen	     },
-{ "tape",	tape	     },
-{ "tp",		tape	     },
-{ "scsi",	scsi         },
+//{ "fsdump",	fsdump       },
+//{ "fsrestore",	fsrestore    },
+//{ "howto",	how_to_boot  },
+//{ "load",       load         },
+//{ "screen",	screen	     },
+//{ "tape",	tape	     },
+//{ "tp",		tape	     },
+//{ "scsi",	scsi         },
 { "quit",	exit_program },
 { 0, 0 }
 };
