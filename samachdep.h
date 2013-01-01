@@ -57,10 +57,17 @@ void configure(void);
 void find_devs(void);
 
 /* bmc.c */
+void bmcintr(void);
 void bmccnprobe(struct consdev *);
 void bmccninit(struct consdev *);
 int  bmccngetc(dev_t);
 void bmccnputc(dev_t, int);
+
+/* bmd.c */
+void bmdinit(void);
+int bmdputc(int);
+void bmdadjust(short, short);
+void bmdclear(void);
 
 /* boot.c */
 extern int devtype;
@@ -90,6 +97,9 @@ int disklabel(int, char **);
 /* exec.c */
 void exec_hp300(char *, u_long, int);
 
+/* font.c */
+extern u_short bmdfont[][20];
+
 /* fsdump.c */
 int fsdump(int, char **);
 int fsrestore(int, char **);
@@ -100,6 +110,9 @@ int getline(char *, char *);
 /* init_main.c */
 extern int nplane;
 
+/* kbd.c */
+int kbd_decode(u_char);
+
 /* locore.S */
 extern	u_int bootdev;
 extern int dipsw1, dipsw2;
@@ -108,6 +121,7 @@ int splhigh(void);
 void splx(int);
 int getsfc(void);
 int getdfc(void);
+int spl6(void);
 
 /* machdep.c */
 void straytrap(int);
@@ -137,10 +151,12 @@ int screen(int, char **);
 int scsi(int, char **);
 
 /* sio.c */
+void _siointr(void);
 void siocnprobe(struct consdev *);
 void siocninit(struct consdev *);
 int  siocngetc(dev_t);
 void siocnputc(dev_t, int);
+void sioinit(void);
 
 /* tape.c */
 int tape(int, char **);
