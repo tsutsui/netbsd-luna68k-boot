@@ -70,7 +70,8 @@
 
 #include <sys/param.h>
 #include <machine/frame.h>
-#include "romvec.h"
+#include <luna68k/stand/boot/samachdep.h>
+#include <luna68k/stand/boot/romvec.h>
 
 #define	USER	040		/* user-mode flag added to type */
 
@@ -96,12 +97,12 @@ char	*trap_type[] = {
  * Called from the trap handler when a processor trap occurs.
  */
 /*ARGSUSED*/
+void
 trap(int type, unsigned int code, unsigned int v, struct frame frame)
 {
 	switch (type) {
 
 	default:
-dopanic:
 		printf("trap type %d, code = %x, v = %x\n", type, code, v);
 		regdump(frame.f_regs, 128);
 		type &= ~USER;

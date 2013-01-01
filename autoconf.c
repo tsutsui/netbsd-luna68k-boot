@@ -78,7 +78,9 @@
 
 #include <sys/param.h>
 #include <sys/dkstat.h>
-#include "device.h"
+#include <lib/libkern/libkern.h>
+#include <luna68k/stand/boot/samachdep.h>
+#include <luna68k/stand/boot/device.h>
 
 int	dkn;		    /* number of iostat dk numbers assigned so far */
 struct	hp_hw sc_table[MAX_CTLR];
@@ -86,6 +88,11 @@ struct	hp_hw sc_table[MAX_CTLR];
 #ifdef DEBUG
 int	acdebug = 1;
 #endif
+
+static int find_controller(struct hp_hw *);
+static int find_device(struct hp_hw *);
+static void find_slaves(struct hp_ctlr *);
+static int same_hw_device(struct hp_hw *, struct hp_device *);
 
 /*
  * Determine mass storage and memory configuration for a machine.
@@ -185,7 +192,7 @@ find_controller(struct hp_hw *hw)
 	if ((*hc->hp_driver->d_init)(hc)) {
 		hc->hp_alive = 1;
 		printf("%s%d", hc->hp_driver->d_name, hc->hp_unit);
-		printf(" at 0x%x,", hc->hp_addr);
+		printf(" at %p,", hc->hp_addr);
 		printf(" ipl %d", hc->hp_ipl);
 		if (hc->hp_flags)
 			printf(" flags 0x%x", hc->hp_flags);
@@ -257,7 +264,7 @@ find_device(struct hp_hw *hw)
 	if ((*hd->hp_driver->d_init)(hd)) {
 		hd->hp_alive = 1;
 		printf("%s%d", hd->hp_driver->d_name, hd->hp_unit);
-		printf(" at 0x%x", hd->hp_addr);
+		printf(" at %p", hd->hp_addr);
 		if (hd->hp_ipl)
 			printf(", ipl %d", hd->hp_ipl);
 		if (hd->hp_flags)

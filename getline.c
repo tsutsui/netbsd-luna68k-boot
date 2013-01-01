@@ -73,6 +73,9 @@
  * 	by A.Fujita, Dec-11-1992
  */
 
+#include <lib/libkern/libkern.h>
+#include <luna68k/stand/boot/samachdep.h>
+
 int
 getline(char *prompt, char *buff)
 {

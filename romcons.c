@@ -71,13 +71,13 @@
 /* romcons.c   OCT-21-1991 */
 
 #include <sys/types.h>
-#include "cons.h"
-#include "romvec.h"
+#include <dev/cons.h>
+#include <luna68k/stand/boot/samachdep.h>
+#include <luna68k/stand/boot/romvec.h>
 
 void
 romcnprobe(struct consdev *cp)
 {
-	cp->cn_tp  = 0;
 	cp->cn_dev = 0;
 	cp->cn_pri = CN_NORMAL;
 }

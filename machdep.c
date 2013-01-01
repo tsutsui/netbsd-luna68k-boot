@@ -70,8 +70,10 @@
 
 #include <sys/param.h>
 #include <luna68k/include/reg.h>
+#include <luna68k/stand/boot/samachdep.h>
 
-char *hexstr(int, int);
+static void dumpmem(int *, int, int);
+static char *hexstr(int, int);
 
 void
 straytrap(int addr)
@@ -149,6 +151,7 @@ regdump(int *rp /* must not be register */, int sbytes)
 
 /*	#define KSADDR	((int *)&(((char *)&u)[(UPAGES-1)*NBPG]))	*/
 
+void
 dumpmem(int *ptr, int sz, int ustack)
 {
 	int i, val;
