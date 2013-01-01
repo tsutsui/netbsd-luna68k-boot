@@ -74,7 +74,9 @@
  */
 
 #include <sys/param.h>
-#include "status.h"
+#include <lib/libkern/libkern.h>
+#include <luna68k/stand/boot/samachdep.h>
+#include <luna68k/stand/boot/status.h>
 
 int
 screen(int argc, char *argv[])
