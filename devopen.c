@@ -68,77 +68,15 @@
  *	@(#)conf.c	8.1 (Berkeley) 6/10/93
  */
 
-#include "saio.h"
+#include <luna68k/stand/boot/samachdep.h>
 
 int
-devread(struct iob *io)
+devopen(struct open_file *f, const char *fname, char **file)
 {
-	int cc;
-
-	io->i_flgs |= F_RDDATA;
-	io->i_error = 0;
-	cc = (*devsw[io->i_dev].dv_strategy)(io, READ);
-	io->i_flgs &= ~F_TYPEMASK;
-	return (cc);
+	return 0;
 }
 
-int
-devwrite(struct iob *io)
-{
-	int cc;
-
-	io->i_flgs |= F_WRDATA;
-	io->i_error = 0;
-	cc = (*devsw[io->i_dev].dv_strategy)(io, WRITE);
-	io->i_flgs &= ~F_TYPEMASK;
-	return (cc);
-}
-
-void
-devopen(struct iob *io)
-{
-
-	(*devsw[io->i_dev].dv_open)(io);
-}
-
-void
-devclose(struct iob *io)
-{
-
-	(*devsw[io->i_dev].dv_close)(io);
-}
-
-int
-devioctl(struct iob *io, int cmd, void *arg)
-{
-
-	return ((*devsw[io->i_dev].dv_ioctl)(io, cmd, arg));
-}
-
-/*ARGSUSED*/
-void
-nullsys(struct iob *io)
-{
-
-	;
-}
-
-/*ARGSUSED*/
-int
-nullioctl(struct iob *io, int cmd, void *arg)
-{
-
-	return (ECMD);
-}
-
-int	nullsys(struct iob *), nullioctl(struct iob *, int, void *);
-int	sdstrategy(struct iob *, int), sdopen(struct iob *), sdioctl(dev_t, u_long data[]);
-
-struct devsw devsw[] = {
-	{ "sd",	sdstrategy,	sdopen,		nullsys,	nullioctl },
-	{ 0, 0, 0, 0, 0 },
-};
-
+#if 0
 dev_t
 make_device(char *str)
 {
@@ -188,3 +126,4 @@ make_device(char *str)
 
 	return(major << 8 | unit << 3 | part);
 }
+#endif
