@@ -242,7 +242,7 @@ Lbssclr:
 	movl	%d0,_dipsw2
 
 /* final setup for C code */
-	movw	#PSL_LOWIPL,sr		| no interrupts
+	movw	#PSL_LOWIPL,%sr		| no interrupts
 	jsr	_main			| lets go
 	jsr	start
 
