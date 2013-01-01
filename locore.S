@@ -107,8 +107,9 @@
 	.globl	_illinst,_zerodiv,_chkinst,_trapvinst,_privinst
 	.globl	_lev6intr,_lev5intr,_lev3intr,_lev2intr,_badtrap
 
+ASENTRY_NOPROFILE(start)
 Reset:
-	jmp start		/* 0: NOT USED (reset PC) */
+	jmp _C_LABEL(start1)	/* 0: NOT USED (reset PC) */
 	.word	0		/* 1: NOT USED (reset PC) */
 	.long	_buserr		/* 2: bus error */
 	.long	_addrerr	/* 3: address error */
@@ -197,7 +198,7 @@ Reset:
 	STACK = 0x800000
 	DIPSW = 0x49000000
 
-ASENTRY_NOPROFILE(start)
+ASENTRY_NOPROFILE(start1)
 	movw	#PSL_HIGHIPL,%sr	| no interrupts
 	movl	#STACK,%sp		| set SP
 
