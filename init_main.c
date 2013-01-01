@@ -71,20 +71,19 @@
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <machine/cpu.h>
-#include "stinger.h"
-#include "romvec.h"
-#include "status.h"
+#include <luna68k/stand/boot/samachdep.h>
+#include <luna68k/stand/boot/stinger.h>
+#include <luna68k/stand/boot/romvec.h>
+#include <luna68k/stand/boot/status.h>
 
-extern int cpuspeed;
-extern int dipsw1, dipsw2;
+static int get_plane_numbers(void);
+static int reorder_dipsw(int);
 
-extern char default_file[];
+int cpuspeed;
 
 #define	VERS_LOCAL	"Phase-31"
 
-extern int howto;
-extern int devtype;
-       int nplane;
+int nplane;
 
 /* KIFF */
 
@@ -102,12 +101,12 @@ int   argc;
 char *argv[MAXARGS];
 
 char  prompt[16];
+int howto;
 
 void
 main(void)
 {
-	int i, status;
-	int *p;
+	int i, status = 0;
 
 	/*
 	 * Initialize the console before we print anything out.
@@ -148,11 +147,13 @@ main(void)
 	if ((howto & 0xFE) == 0) {
 		printf("auto-boot %s\n", default_file);
 		
+#if 0
 		i = open(default_file, 0);
 		if (i >= 0) {
 			bootunix(howto, devtype, i);
 			close(i);
 		}
+#endif
 	}
 
 	/*
@@ -170,7 +171,7 @@ main(void)
 		}
 	} while(status != ST_EXIT);
 
-	exit();
+	exit(0);
 }
 
 int
