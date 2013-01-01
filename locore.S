@@ -746,7 +746,7 @@ ENTRY(spl5)
 
 ENTRY(spl6)
 	moveq	#0,%d0
-	movw	sr,%d0
+	movw	%sr,%d0
 	movw	#SPL6,%sr
 	rts
 
