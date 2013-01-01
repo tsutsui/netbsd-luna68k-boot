@@ -73,9 +73,13 @@
 #define NSIO 2
 
 #include <sys/param.h>
-#include "sioreg.h"
-#include "rcvbuf.h"
-#include "kbdreg.h"
+#include <luna68k/stand/boot/samachdep.h>
+#include <luna68k/stand/boot/sioreg.h>
+#include <luna68k/stand/boot/rcvbuf.h>
+#include <luna68k/stand/boot/kbdreg.h>
+
+static void siointr(int);
+static int sioreg(int, int);
 
 struct rcvbuf	rcvbuf[NSIO];
 
@@ -100,7 +104,7 @@ _siointr(void)
 void
 siointr(int unit)
 {
-	struct siodevice *sio = sio_addr[unit];
+/*	struct siodevice *sio = sio_addr[unit]; */
 	int rr0 = sioreg(REG(unit, RR0), 0);
 	int rr1 = sioreg(REG(unit, RR1), 0);
 
@@ -125,8 +129,8 @@ siointr(int unit)
 /*
  * Following are all routines needed for SIO to act as console
  */
-#include <luna68k/luna68k/cons.h>
-#include "romvec.h"
+#include <dev/cons.h>
+#include <luna68k/stand/boot/romvec.h>
 
 void
 siocnprobe(struct consdev *cp)
@@ -144,7 +148,6 @@ siocnprobe(struct consdev *cp)
 
 	/* initialize required fields */
 	cp->cn_dev = cur_unit = 0;
-	cp->cn_tp  = 0;
 	cp->cn_pri = CN_NORMAL;
 }
 
