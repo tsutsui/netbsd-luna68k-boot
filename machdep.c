@@ -75,7 +75,6 @@
 #include <luna68k/stand/boot/samachdep.h>
 
 static void dumpmem(int *, int, int);
-static char *hexstr(int, int);
 
 void
 straytrap(int addr)

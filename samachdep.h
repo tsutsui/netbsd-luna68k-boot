@@ -128,6 +128,7 @@ int spl6(void);
 void straytrap(int);
 int badaddr(volatile void *);
 void regdump(int *, int);
+char *hexstr(int, int);
 
 /* prf.c */
 int tgetchar(void);
