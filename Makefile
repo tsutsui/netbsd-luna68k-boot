@@ -38,9 +38,11 @@ SRCS+=	cons.c prf.c tgets.c
 SRCS+=	romcons.c
 SRCS+=	sio.c
 SRCS+=	bmc.c bmd.c screen.c font.c kbd.c
-#SRCS+=	scsi.c sd.c
+SRCS+=	scsi.c sc.c sd.c
 #SRCS+=	st.c tape.c
-#SRCS+=	disklabel.c fsdump.c
+SRCS+=	disklabel.c
+#SRCS+=	fsdump.c
+SRCS+=	ufs_disksubr.c
 
 PROG=   boot
 
