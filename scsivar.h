@@ -74,7 +74,7 @@ struct	scsi_softc {
 	struct	hp_ctlr *sc_hc;
 	u_char	*sc_buf;				/* Data Buffer Pointor*/
 	u_char	*sc_cdb;				/* CDB Buffer Pointor */
-	int	*sc_lock;				/* Lock Flag addres   */
+	volatile int *sc_lock;				/* Lock Flag addres   */
 	int	sc_flags;				/* SPC Status Flags   */
 	int	sc_phase;				/* Current SCSI Phase */
 	int	sc_target;				/* Current Target ID  */

@@ -492,8 +492,6 @@ _lev2intr:
 	moveml	%sp@+,#0x0303
 	addql	#2,%sp
 	jra	rei
-ENTRY_NOPROFILE(scintr)
-	rts
 
 _lev3intr:
 	clrw	%sp@-

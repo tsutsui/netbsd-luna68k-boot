@@ -92,6 +92,7 @@ extern	u_int opendev;
 int atoi(char *);
 
 /* disklabel.c */
+extern u_char lbl_buff[];
 int disklabel(int, char **);
 
 /* exec.c */
@@ -144,11 +145,31 @@ void romcninit(struct consdev *);
 int  romcngetc(dev_t);
 void romcnputc(dev_t, int);
 
+/* sc.c */
+struct scsi_fmt_cdb;
+int scsi_immed_command(int, int, int, struct scsi_fmt_cdb *, u_char *,
+    unsigned int);
+int scsi_request_sense(int, int, int, u_char *, unsigned int);
+int scsi_test_unit_rdy(int, int, int);
+int scsi_format_unit(int, int, int);
+int scintr(void);
+
+/* scsi.c */
+int scsi(int, char **);
+int scsi_read_raw(u_int, u_int, u_int, u_char *, u_int);
+int scsi_read(u_int, u_char *, u_int);
+int scsi_write(u_int, u_char *, u_int);
+
 /* screen.c */
 int screen(int, char **);
 
 /* scsi.c */
 int scsi(int, char **);
+
+/* sd.c */
+int sdstrategy(void *, int, daddr_t, size_t, void *, size_t *);
+int sdopen(struct open_file *, ...);
+int sdclose(struct open_file *);
 
 /* sio.c */
 void _siointr(void);
@@ -166,6 +187,10 @@ int tgets(char *);
 
 /* trap.c */
 void trap(int, unsigned int, unsigned int, struct frame);
+
+/* ufs_disklabel.c */
+char *readdisklabel(int dev, int (*)(void *, int, daddr_t, size_t, void *, size_t *), struct disklabel *);
+
 
 #define DELAY(n)							\
 do {									\

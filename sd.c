@@ -79,20 +79,11 @@
 /*
  * SCSI CCS (Command Command Set) disk driver.
  */
-#define	NSD	2
-
 #include <sys/param.h>
 #include <sys/disklabel.h>
-#include "scsireg.h"
-#include "saio.h"
-#include "device.h"
-
-
-int	sdinit(struct hp_device *), sdstrategy(struct iob *, int), sdstart(void), sdustart(void), sdgo(void), sdintr(void);
-
-struct	driver sddriver = {
-	sdinit, "sd", sdstart, sdgo, sdintr,
-};
+#include <luna68k/stand/boot/samachdep.h>
+#include <luna68k/stand/boot/scsireg.h>
+#include <luna68k/stand/boot/device.h>
 
 struct	disklabel sdlabel[NSD];
 
@@ -107,7 +98,25 @@ struct	sd_softc {
 	u_int	sc_blks;	/* number of blocks on device */
 	int	sc_blksize;	/* device block size in bytes */
 	u_int	sc_wpms;	/* average xfer rate in 16 bit wds/sec. */
-} sd_softc[NSD];
+};
+
+struct sd_devdata {
+	int	unit;		/* drive number */
+	int	part;		/* partition */
+};
+ 
+static int sdinit(void *);
+static int sdstart(void);
+static int sdgo(void);
+static int sdintr(void);
+static int sdident(struct sd_softc *, struct hp_device *);
+
+struct	driver sddriver = {
+	sdinit, "sd", sdstart, sdgo, sdintr,
+};
+
+struct sd_softc sd_softc[NSD];
+struct sd_devdata sd_devdata[NSD];
 
 /* sc_flags values */
 #define	SDF_ALIVE	0x1
@@ -119,13 +128,13 @@ struct	sd_softc {
 static struct scsi_inquiry inqbuf;
 static struct scsi_fmt_cdb inq = {
 	6,
-	CMD_INQUIRY, 0, 0, 0, sizeof(inqbuf), 0
+	{ CMD_INQUIRY, 0, 0, 0, sizeof(inqbuf), 0 }
 };
 
 static u_long capbuf[2];
 struct scsi_fmt_cdb cap = {
 	10,
-	CMD_READ_CAPACITY, 0, 0, 0, 0, 0, 0, 0, 0, 0
+	{ CMD_READ_CAPACITY, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
 };
 
 int
@@ -209,11 +218,12 @@ sdident(struct sd_softc *sc, struct hp_device *hd)
 }
 
 int
-sdinit(struct hp_device *hd)
+sdinit(void *arg)
 {
+	struct hp_device *hd = arg;
 	struct sd_softc *sc = &sd_softc[hd->hp_unit];
 	struct disklabel *lp;
-	char *msg, *readdisklabel(int, int (*)(struct iob *, int), struct disklabel *);
+	char *msg;
 
 #ifdef DEBUG
 	printf("sdinit: hd->hp_unit = %d\n", hd->hp_unit);
@@ -245,47 +255,78 @@ sdinit(struct hp_device *hd)
 	/*
 	 * read disklabel
 	 */
-	if (msg = readdisklabel(hd->hp_slave, sdstrategy, lp)) {
-		if (msg != NULL)
-			printf("sd%d: %s\n", hd->hp_unit, msg);
-	}
+	msg = readdisklabel(hd->hp_slave, sdstrategy, lp);
+	if (msg != NULL)
+		printf("sd%d: %s\n", hd->hp_unit, msg);
 
 	sc->sc_flags = SDF_ALIVE;
 	return(1);
 }
 
 int
-sdopen(struct iob *io)
+sdopen(struct open_file *f, ...)
 {
-	int unit = io->i_unit;
-	struct disklabel *lp;
+	va_list ap;
+	struct sd_devdata *sd;
+	int unit, part;
+
+	va_start(ap, f);
+	unit = va_arg(ap, int);
+	part = va_arg(ap, int);
+	va_end(ap);
 
 	if (unit < 0 || unit >= NSD)
 		return(-1);
+	if (part < 0 || part >= 8)
+		return(-1);
 
-	lp = &sdlabel[unit];
-	io->i_boff = lp->d_partitions[io->i_boff].p_offset;
+	sd = &sd_devdata[unit];
+	sd->unit = unit;
+	sd->part = part;
+	f->f_devdata = (void *)sd;
+
+	return 0;
+}
+
+int
+sdclose(struct open_file *f)
+{
+	struct sd_devdata *sd = f->f_devdata;
+
+	sd->unit = -1;
+	sd->part = -1;
+	f->f_devdata = NULL;
+
+	return 0;
 }
 
 static struct scsi_fmt_cdb cdb_read = {
 	10,
-	CMD_READ_EXT,  0, 0, 0, 0, 0, 0, 0, 0, 0
+	{ CMD_READ_EXT,  0, 0, 0, 0, 0, 0, 0, 0, 0 }
 };
 
 static struct scsi_fmt_cdb cdb_write = {
 	6,
-	CMD_WRITE_EXT, 0, 0, 0, 0, 0, 0, 0, 0, 0
+	{ CMD_WRITE_EXT, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
 };
 
 int
-sdstrategy(struct iob *io, int func)
+sdstrategy(void *devdata, int func, daddr_t dblk, size_t size, void *v_buf,
+    size_t *rsize)
 {
-	int unit = io->i_unit;
+	struct sd_devdata *sd = devdata;
+	struct disklabel *lp;
+	uint8_t *buf = v_buf;
+	int unit = sd->unit;
+	int part = sd->part;
 	struct sd_softc *sc = &sd_softc[unit];
 	struct scsi_fmt_cdb *cdb;
-	daddr_t blk = io->i_bn >> sc->sc_bshift;
-	u_int nblk  = io->i_cc >> sc->sc_bshift;
-	int stat, ctlr, slave, i;
+	daddr_t blk;
+	u_int nblk  = size >> sc->sc_bshift;
+	int stat, ctlr, slave;
+#ifdef DEBUG
+	int i;
+#endif
 
 	if (unit < 0 || unit >= NSD)
 		return(-1);
@@ -293,7 +334,10 @@ sdstrategy(struct iob *io, int func)
 	ctlr  = sc->sc_hd->hp_ctlr;
 	slave = sc->sc_hd->hp_slave;
 
-	if (func == READ)
+	lp = &sdlabel[unit];
+	blk = dblk + (lp->d_partitions[part].p_offset >> sc->sc_bshift);
+
+	if (func == F_READ)
 		cdb = &cdb_read;
 	else
 		cdb = &cdb_write;
@@ -307,37 +351,41 @@ sdstrategy(struct iob *io, int func)
 	cdb->cdb[8] = ((nblk >> DEV_BSHIFT) & 0x00ff);
 
 #ifdef DEBUG
-	printf("sdstrategy: io->i_unit = %d\n", io->i_unit);
-	printf("sdstrategy: blk = %d (0x%x), nblk = %d (0x%x)\n", blk, blk, nblk, nblk);
+	printf("sdstrategy: unit = %d\n", unit);
+	printf("sdstrategy: blk = %lu (0x%lx), nblk = %u (0x%x)\n", (u_long)blk, (long)blk, nblk, nblk);
 	for (i = 0; i < 10; i++)
 		printf("sdstrategy: cdb[%d] = 0x%x\n", i, cdb->cdb[i]);
 	printf("sdstrategy: ctlr = %d, slave = %d\n", ctlr, slave);
 #endif
-	stat = scsi_immed_command(ctlr, slave, sc->sc_punit, cdb,  io->i_ma, io->i_cc);
+	stat = scsi_immed_command(ctlr, slave, sc->sc_punit, cdb, buf, size);
+	if (rsize)
+		*rsize = size;
 
-	return(io->i_cc);
-}
-
-int
-sdustart(void)
-{
+	return 0;
 }
 
 int
 sdstart(void)
 {
+
+	return 0;
 }
 
 int
 sdgo(void)
 {
+
+	return 0;
 }
 
 int
 sdintr(void)
 {
+
+	return 0;
 }
 
+#if 0
 int
 sdread(dev_t dev, u_int blk, u_int nblk, u_char *buff, u_int len)
 {
@@ -387,3 +435,4 @@ sdioctl(dev_t dev, u_long data[])
 
 	return(1);
 }
+#endif

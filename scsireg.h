@@ -39,8 +39,8 @@
  */
 
 struct scsidevice {
-	u_char	scsi_bdid, p0, p1, p2;		/* 000 */
-	u_char	scsi_sctl, p3, p4, p5;		/* 004 */
+	volatile u_char	scsi_bdid, p0, p1, p2;		/* 000 */
+	volatile u_char	scsi_sctl, p3, p4, p5;		/* 004 */
 #define			SCTL_DISABLE	0x80
 #define			SCTL_CTRLRST	0x40
 #define			SCTL_DIAG	0x20
@@ -49,7 +49,7 @@ struct scsidevice {
 #define			SCTL_SEL_ENAB	0x04
 #define			SCTL_RESEL_ENAB	0x02
 #define			SCTL_INTR_ENAB	0x01
-	u_char	scsi_scmd, p6, p7, p8;		/* 008 */
+	volatile u_char	scsi_scmd, p6, p7, p8;		/* 008 */
 #define			SCMD_RST	0x10
 #define			SCMD_ICPT_XFR	0x08
 #define			SCMD_PROG_XFR	0x04
@@ -64,9 +64,9 @@ struct scsidevice {
 #define			SCMD_XFR_PAUSE	0xa0
 #define			SCMD_RST_ACK	0xc0
 #define			SCMD_SET_ACK	0xe0
-	u_char	scsi_tmod, p9, p10, p11;	/* 00C */
+	volatile u_char	scsi_tmod, p9, p10, p11;	/* 00C */
 #define			TMOD_SYNC	0x80
-	u_char	scsi_ints, p12, p13, p14;	/* 010 */
+	volatile u_char	scsi_ints, p12, p13, p14;	/* 010 */
 #define			INTS_SEL	0x80
 #define			INTS_RESEL	0x40
 #define			INTS_DISCON	0x20
@@ -75,7 +75,7 @@ struct scsidevice {
 #define			INTS_TIMEOUT	0x04
 #define			INTS_HARD_ERR	0x02
 #define			INTS_RST	0x01
-	u_char	scsi_psns, p15, p16, p17;	/* 014 */
+	volatile u_char	scsi_psns, p15, p16, p17;	/* 014 */
 #define			PSNS_REQ	0x80
 #define			PSNS_ACK	0x40
 #define			PSNS_ATN	0x20
@@ -83,7 +83,7 @@ struct scsidevice {
 #define			PSNS_BSY	0x08
 #define		scsi_sdgc scsi_psns
 #define			SDGC_XFER_ENAB	0x20
-	u_char	scsi_ssts, p18, p19, p20;	/* 018 */
+	volatile u_char	scsi_ssts, p18, p19, p20;	/* 018 */
 #define			SSTS_INITIATOR	0x80
 #define			SSTS_TARGET	0x40
 #define			SSTS_BUSY	0x20
@@ -93,7 +93,7 @@ struct scsidevice {
 #define			SSTS_TCZERO	0x04
 #define			SSTS_DREG_FULL	0x02
 #define			SSTS_DREG_EMPTY	0x01
-	u_char	scsi_serr, p21, p22, p23;	/* 01C */
+	volatile u_char	scsi_serr, p21, p22, p23;	/* 01C */
 #define			SERR_SCSI_PAR	0x80
 #define			SERR_SPC_PAR	0x40
 #define			SERR_XFER_OUT	0x20
@@ -101,15 +101,15 @@ struct scsidevice {
 #define			SERR_PHASE_ERR	0x04
 #define			SERR_SHORT_XFR	0x02
 #define			SERR_OFFSET	0x01
-	u_char	scsi_pctl, p24, p25, p26;	/* 020 */
+	volatile u_char	scsi_pctl, p24, p25, p26;	/* 020 */
 #define			PCTL_BFINT_ENAB	0x80
-	u_char	scsi_mbc,  p27, p28, p29;	/* 024 */
-	u_char	scsi_dreg, p30, p31, p32;	/* 028 */
-	u_char	scsi_temp, p33, p34, p35;	/* 02C */
-	u_char	scsi_tch,  p36, p37, p38;	/* 030 */
-	u_char	scsi_tcm,  p39, p40, p41;	/* 034 */
-	u_char	scsi_tcl,  p42, p43, p44;	/* 038 */
-	u_char	scsi_exbf, p45, p46, p47;	/* 03C */
+	volatile u_char	scsi_mbc,  p27, p28, p29;	/* 024 */
+	volatile u_char	scsi_dreg, p30, p31, p32;	/* 028 */
+	volatile u_char	scsi_temp, p33, p34, p35;	/* 02C */
+	volatile u_char	scsi_tch,  p36, p37, p38;	/* 030 */
+	volatile u_char	scsi_tcm,  p39, p40, p41;	/* 034 */
+	volatile u_char	scsi_tcl,  p42, p43, p44;	/* 038 */
+	volatile u_char	scsi_exbf, p45, p46, p47;	/* 03C */
 };
 
 /* psns/pctl phase lines as bits */
@@ -424,7 +424,9 @@ struct scsi_cache {
  * Driver ioctl's for various scsi operations.
  */
 #ifndef _IOCTL_
+#if 0
 #include <sys/ioctl.h>
+#endif
 #endif
 
 /*

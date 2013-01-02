@@ -76,8 +76,10 @@
  */
 
 #include <sys/param.h>
-#include "scsireg.h"
-#include "status.h"
+#include <lib/libkern/libkern.h>
+#include <luna68k/stand/boot/samachdep.h>
+#include <luna68k/stand/boot/scsireg.h>
+#include <luna68k/stand/boot/status.h>
 
 
 int scsi_device = 6;
@@ -89,13 +91,13 @@ u_char	sensbuff[SENSBUFF];				/* #80J>e$OL50UL#$G$"$k!#         */
 static struct scsi_inquiry inquirybuf;
 static struct scsi_fmt_cdb inquiry = {
 	6,
-	CMD_INQUIRY, 0, 0, 0, sizeof(inquirybuf), 0
+	{ CMD_INQUIRY, 0, 0, 0, sizeof(inquirybuf), 0 }
 };
 
 static u_long capacitybuf[2];
 struct scsi_fmt_cdb capacity = {
 	10,
-	CMD_READ_CAPACITY, 0, 0, 0, 0, 0, 0, 0, 0, 0
+	{ CMD_READ_CAPACITY, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
 };
 
 
@@ -113,7 +115,7 @@ scsi(int argc, char *argv[])
 	if (!strcmp(argv[1], "device")) {
 		if (argc > 2) {
 			i = 0;
-			for (p = argv[2]; *p != NULL; p++) {
+			for (p = argv[2]; *p != '\0' ; p++) {
 				i = i * 10 + *p - '0';
 			}
 			if ( i < 8 && i >= 0) {
@@ -153,9 +155,9 @@ scsi(int argc, char *argv[])
 	} else if (!strcmp(argv[1], "read_capacity")) {
 		if (scsi_immed_command(   0, scsi_device,   0, &capacity,
 				       (u_char *) &capacitybuf, sizeof(capacitybuf)) == 0) {
-			printf("Logical Block Address:\t%d (0x%x)\n",
+			printf("Logical Block Address:\t%ld (0x%lx)\n",
 			       capacitybuf[0], capacitybuf[0]);
-			printf("Block Length:\t\t%d (0x%x)\n",
+			printf("Block Length:\t\t%ld (0x%lx)\n",
 			       capacitybuf[1], capacitybuf[1]);
 		}
 	} else if (!strcmp(argv[1], "trace")) {
@@ -187,7 +189,7 @@ scsi(int argc, char *argv[])
 
 static struct scsi_fmt_cdb scsi_cdb = {
 	10,
-	0,  0, 0, 0, 0, 0, 0, 0, 0, 0
+	{ 0,  0, 0, 0, 0, 0, 0, 0, 0, 0 }
 };
 
 int

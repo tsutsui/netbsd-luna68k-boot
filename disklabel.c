@@ -77,15 +77,23 @@
 
 #include <sys/param.h>
 #define DKTYPENAMES
+#define FSTYPENAMES
 #include <sys/disklabel.h>
-#include "saio.h"
-#include "status.h"
-#include "omron_disklabel.h"
+#include <ufs/ffs/fs.h>
+#include <lib/libkern/libkern.h>
+#include <luna68k/stand/boot/samachdep.h>
+#include <luna68k/stand/boot/status.h>
+#include <luna68k/stand/boot/omron_disklabel.h>
 
+static void display(struct disklabel *);
+
+#define SBSIZE SBLOCKSIZE
+#define FS_MAGIC FS_UFS1_MAGIC
 #define LABEL_SIZE BBSIZE
 
 u_char lbl_buff[LABEL_SIZE];
 
+#if 0
 u_short
 dkcksum(struct disklabel *lp)
 {
@@ -98,6 +106,7 @@ dkcksum(struct disklabel *lp)
 		sum ^= *start++;
 	return (sum);
 }
+#endif
 
 int
 disklabel(int argc, char *argv[])
@@ -138,7 +147,7 @@ disklabel(int argc, char *argv[])
 		printf("Offset = %d\n", i);
 		printf("\n");
 		printf("Checksum of Bad Track:\t0x%x\n",	omp->dkl_badchk);
-		printf("Logical Block Total:\t%d(0x%x)\n",	omp->dkl_maxblk, omp->dkl_maxblk);
+		printf("Logical Block Total:\t%lu(0x%lx)\n",	omp->dkl_maxblk, omp->dkl_maxblk);
 		printf("Disk Drive Type:\t0x%x\n",		omp->dkl_dtype);
 		printf("Number of Disk Drives:\t%d(0x%x)\n",	omp->dkl_ndisk, omp->dkl_ndisk);
 		printf("Number of Data Cylinders:\t%d(0x%x)\n",	omp->dkl_ncyl, omp->dkl_ncyl);
@@ -153,8 +162,8 @@ disklabel(int argc, char *argv[])
 		printf("Physical Partition Number:\t%d(0x%x)\n",
 		       omp->dkl_ppart, omp->dkl_ppart);
 		for (i = 0; i < NLPART; i++)
-			printf("\t%d:\t%d\t%d\n", i,
-			       omp->dkl_map[i].dkl_blkno, omp->dkl_map[i].dkl_nblk);
+			printf("\t%d:\t%ld\t%ld\n", i,
+			       (long)omp->dkl_map[i].dkl_blkno, (long)omp->dkl_map[i].dkl_nblk);
 		printf("Identifies This Label Format:\t0x%x\n",	omp->dkl_magic);
 		printf("XOR Checksum of Sector:\t0x%x\n",	omp->dkl_cksum);
 	} else if (!strcmp(argv[1], "checksum")) {
@@ -164,7 +173,7 @@ disklabel(int argc, char *argv[])
 			count = sizeof(struct scd_dk_label) / sizeof(short int);
 			for (p= (u_short *) lbl_buff; count > 0; count--) {
 				if (count == 1)
-					printf("Check Sum: 0x%x\n", chksum);
+					printf("Check Sum: 0x%lx\n", chksum);
 				chksum ^= *p++;
 			}
 
@@ -226,7 +235,7 @@ disklabel(int argc, char *argv[])
 		for (p= (u_short *) lbl_buff; count > 1; count--) {
 			chksum ^= *p++;
 		}
-		printf("chksum: 0x%x\n", chksum);
+		printf("chksum: 0x%lx\n", chksum);
 
 		omp->dkl_cksum = chksum;
 		printf("dkl_cksum: 0x%x\n", omp->dkl_cksum);
@@ -240,7 +249,7 @@ disklabel(int argc, char *argv[])
 		}
 	} else if (!strcmp(argv[1], "set")) {
 		i = (argv[2])[1] - 'a';
-		for (q = argv[3], j = 0; *q != NULL; q++) {
+		for (q = argv[3], j = 0; *q != '\0'; q++) {
 			j = (j * 10) + (*q - '0');
 		}
 		switch (*argv[2]) {
@@ -308,7 +317,7 @@ disklabel(int argc, char *argv[])
 	return(ST_NORMAL);
 }
 
-int
+void
 display(struct disklabel *lp)
 {
 	int i, j;

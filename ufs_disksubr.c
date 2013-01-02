@@ -77,9 +77,8 @@
 
 #include <sys/param.h>
 #include <sys/disklabel.h>
-#include <luna68k/dev/scsireg.h>
-
-extern u_char lbl_buff[];
+#include <luna68k/stand/boot/samachdep.h>
+#include <luna68k/stand/boot/scsireg.h>
 
 /*
  * Attempt to read a disk label from a device
@@ -90,14 +89,14 @@ extern u_char lbl_buff[];
  * Returns null on success and an error string on failure.
  */
 char *
-readdisklabel(int dev, int (*strat)(struct iob *, int), struct disklabel *lp)
+readdisklabel(int dev, int (*strat)(void *, int, daddr_t, size_t, void *, size_t *), struct disklabel *lp)
 {
 	u_char *bp = lbl_buff;
 	struct disklabel *dlp;
 	char *msg = NULL;
 	static struct scsi_fmt_cdb cdb = {
 		6,
-		CMD_READ, 0, 0, 0, 1, 0
+		{ CMD_READ, 0, 0, 0, 1, 0 }
 	};
 
 	if (lp->d_secperunit == 0)
