@@ -79,8 +79,10 @@
 #include <sys/stat.h>
 #define DKTYPENAMES
 #include <sys/disklabel.h>
-#include "status.h"
-#include "omron_disklabel.h"
+#include <lib/libkern/libkern.h>
+#include <luna68k/stand/boot/samachdep.h>
+#include <luna68k/stand/boot/status.h>
+#include <luna68k/stand/boot/omron_disklabel.h>
 
 #define LABEL_SIZE 512
 
@@ -89,7 +91,7 @@
 
 static u_char index[LABEL_SIZE];
 
-struct disklabel *lp  = (struct disklabel *)((struct scd_dk_label *) index)->dkl_pad;
+struct disklabel *lp = (void *)&index[offsetof(struct scd_dk_label, dkl_pad)];
 
 extern dev_t  rst0;
 extern dev_t nrst0;
@@ -104,7 +106,6 @@ int
 fsdump(int argc, char *argv[])
 {
 	int i, j, io;
-	char *p;
 	int status;
 	int block, bytes;
 	int scsi_id, blk, nblks, size, mark;
@@ -221,6 +222,7 @@ fsdump(int argc, char *argv[])
 			printf("\n\n");
 		}
 	}
+	return(ST_NORMAL);
 }
 
 int
@@ -293,4 +295,5 @@ fsrestore(int argc, char *argv[])
 			printf("\n\n");
 		}
 	}
+	return(ST_NORMAL);
 }
