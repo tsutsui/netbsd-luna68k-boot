@@ -146,17 +146,17 @@ main(void)
 
 	howto = reorder_dipsw(dipsw2);
 
+#if 0
 	if ((howto & 0xFE) == 0) {
 		printf("auto-boot %s\n", default_file);
 		
-#if 0
 		i = open(default_file, 0);
 		if (i >= 0) {
 			bootunix(howto, devtype, i);
 			close(i);
 		}
-#endif
 	}
+#endif
 
 	/*
 	 * Main Loop
