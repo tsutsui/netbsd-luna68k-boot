@@ -70,8 +70,8 @@
  * Note: "le" isn't a major offset.
  */
 struct devsw devsw[] = {
-//	{ "sd",	sdstrategy,	sdopen,	sdclose,	sdioctl },
-//	{ "le",	netstrategy,	netopen, netclose,	netioctl },
+	{ "sd",	sdstrategy,	sdopen,	sdclose,	sdioctl },
+	{ "le",	netstrategy,	netopen, netclose,	netioctl },
 };
 int	ndevs = __arraycount(devsw);
 
@@ -109,8 +109,12 @@ int	npunit = __arraycount(punitsw);
 /*
  * Filesystem configuration
  */
+#ifdef SUPPORT_DISK
 struct fs_ops file_system_ufs[] = { FS_OPS(ufs) };
-//struct fs_ops file_system_nfs[] = { FS_OPS(nfs) };
+#endif
+#ifdef SUPPORT_ETHERNET
+struct fs_ops file_system_nfs[] = { FS_OPS(nfs) };
+#endif
 
 struct fs_ops file_system[1];
 int	nfsys = 1;		/* we always know which one we want */
