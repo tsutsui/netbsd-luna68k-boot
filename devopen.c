@@ -70,42 +70,68 @@
  *	@(#)conf.c	8.1 (Berkeley) 6/10/93
  */
 
+#include <lib/libkern/libkern.h>
 #include <luna68k/stand/boot/samachdep.h>
+#include <machine/disklabel.h>
+
+static int make_device(const char *, int *, int *, int *, char **);
 
 int
 devopen(struct open_file *f, const char *fname, char **file)
 {
+	int dev, unit, part;
+	int error;
+	struct devsw *dp;
+
+	if (make_device(fname, &dev, &unit, &part, file) != 0)
+		return ENXIO;
+
+#ifdef DEBUG
+	printf("%s: %s(%d,%d)%s\n", __func__,
+	    devsw[dev].dv_name, unit, part, *file);
+#endif
+	dp = &devsw[dev];
+	error = (*dp->dv_open)(f, unit, part);
+	if (error != 0) {
+#ifdef DEBUG
+		printf("%s: open %s(%d,%d)%s failed (%s)\n", __func__,
+		    devsw[dev].dv_name, unit, part, *file, strerror(error));
+#endif
+		return error;
+	}
 
 	file_system[0] = file_system_ufs[0];
-	sdopen(f, 0, 0);
-	f->f_dev = devsw;
-	*file = "netbsd";
+	f->f_dev = dp;
+
 	return 0;
 }
 
-#if 0
-dev_t
-make_device(char *str)
+#define MAXDEVNAME 16
+
+int
+make_device(const char *str, int *devp, int *unitp, int *partp, char **fname)
 {
-	char *cp;
+	const char *cp;
 	struct devsw *dp;
 	int major, unit, part;
+	int i;
+	char devname[MAXDEVNAME];
 
 	/*
 	 * parse path strings
 	 */
 							/* find end of dev type name */
-	for (cp = str; *cp && *cp != '('; cp++)
-			;
+	for (cp = str, i = 0; *cp != '\0' && *cp != '(' && i < MAXDEVNAME; i++)
+			devname[i] = *cp++;
 	if (*cp != '(') {
 		return (-1);
 	}
+	devname[i] = '\0';
 							/* compare dev type name */
-	*cp = '\0';
 	for (dp = devsw; dp->dv_name; dp++)
-		if (!strcmp(str, dp->dv_name))
+		if (!strcmp(devname, dp->dv_name))
 			break;
-	*cp++ = '(';
+	cp++;
 	if (dp->dv_name == NULL) {
 		return (-1);
 	}
@@ -115,6 +141,9 @@ make_device(char *str)
 	if (*cp >= '0' && *cp <= '9')
 		unit = unit * 10 + *cp++ - '0';
 	if (unit < 0 || unit > 63) {
+#ifdef DEBUG
+		printf("%s: invalid unit number (%d)\n", __func__, unit);
+#endif
 		return (-1);
 	}
 							/* get partition offset */
@@ -130,7 +159,21 @@ make_device(char *str)
 			continue;
 		return (-1);
 	}
-
-	return(major << 8 | unit << 3 | part);
-}
+	if (part < 0 || part > MAXPARTITIONS) {
+#ifdef DEBUG
+		printf("%s: invalid partition number (%d)\n", __func__, part);
 #endif
+		return (-1);
+	}
+
+	*devp  = major;
+	*unitp = unit;
+	*partp = part;
+	*fname = __UNCONST(cp + 1);
+#ifdef DEBUG
+	printf("%s: major = %d, unit = %d, part = %d, fname = %s\n",
+	    __func__, major, unit, part, *fname);
+#endif
+
+	return 0;
+}
