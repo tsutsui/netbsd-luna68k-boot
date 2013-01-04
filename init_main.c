@@ -77,6 +77,7 @@
 #include <luna68k/stand/boot/stinger.h>
 #include <luna68k/stand/boot/romvec.h>
 #include <luna68k/stand/boot/status.h>
+#include <lib/libsa/loadfile.h>
 
 static int get_plane_numbers(void);
 static int reorder_dipsw(int);
@@ -146,6 +147,27 @@ main(void)
 
 	howto = reorder_dipsw(dipsw2);
 
+#if 1
+	{
+		int fd;
+		u_long marks[MARK_MAX];
+		char file[] = "sd(0,0)netbsd";
+		void (*entry)(void);
+
+		memset(marks, 0, sizeof marks);
+		printf("loading: %s\n", file);
+		fd = loadfile(file, marks, LOAD_KERNEL);
+		if (fd != -1) {
+			printf("entry = 0x%lx\n", marks[MARK_ENTRY]);
+			printf("ssym  = 0x%lx\n", marks[MARK_SYM]);
+			printf("esym  = 0x%lx\n", marks[MARK_END]);
+
+			entry = (void *)marks[MARK_ENTRY];
+
+			(*entry)();
+		}
+	}
+#endif
 #if 0
 	if ((howto & 0xFE) == 0) {
 		printf("auto-boot %s\n", default_file);
