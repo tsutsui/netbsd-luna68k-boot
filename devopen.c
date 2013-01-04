@@ -75,6 +75,11 @@
 int
 devopen(struct open_file *f, const char *fname, char **file)
 {
+
+	file_system[0] = file_system_ufs[0];
+	sdopen(f, 0, 0);
+	f->f_dev = devsw;
+	*file = "netbsd";
 	return 0;
 }
 
