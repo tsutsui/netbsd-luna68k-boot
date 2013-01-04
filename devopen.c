@@ -115,7 +115,7 @@ make_device(const char *str, int *devp, int *unitp, int *partp, char **fname)
 	struct devsw *dp;
 	int major, unit, part;
 	int i;
-	char devname[MAXDEVNAME];
+	char devname[MAXDEVNAME + 1];
 
 	/*
 	 * parse path strings
