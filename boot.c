@@ -91,14 +91,14 @@ struct exec header;
 char default_file[] = "sd(0,0)netbsd";
 
 char *how_to_info[] = {
-"RB_ASKNAME	ask for file name to reboot from",
-"RB_SINGLE	reboot to single user only",
-"RB_NOSYNC	dont sync before reboot",
-"RB_HALT	don't reboot, just halt",
-"RB_INITNAME	name given for /etc/init (unused)",
-"RB_DFLTROOT	use compiled-in rootdev",
-"RB_KDB		give control to kernel debugger",
-"RB_RDONLY	mount root fs read-only"
+	"RB_ASKNAME	ask for file name to reboot from",
+	"RB_SINGLE	reboot to single user only",
+	"RB_NOSYNC	dont sync before reboot",
+	"RB_HALT	don't reboot, just halt",
+	"RB_INITNAME	name given for /etc/init (unused)",
+	"RB_DFLTROOT	use compiled-in rootdev",
+	"RB_KDB		give control to kernel debugger",
+	"RB_RDONLY	mount root fs read-only"
 };
 
 int

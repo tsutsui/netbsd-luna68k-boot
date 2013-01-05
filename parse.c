@@ -102,24 +102,24 @@ struct command_entry {
 };
 
 struct command_entry entries[] = {
-{ "b",		boot         },
-{ "boot",	boot         },
-{ "chkargs",	check_args   },
-{ "disklabel",	disklabel    },
-{ "exit",	exit_program },
+	{ "b",		boot         },
+	{ "boot",	boot         },
+	{ "chkargs",	check_args   },
+	{ "disklabel",	disklabel    },
+	{ "exit",	exit_program },
 #ifdef notyet
-{ "fsdump",	fsdump       },
-{ "fsrestore",	fsrestore    },
+	{ "fsdump",	fsdump       },
+	{ "fsrestore",	fsrestore    },
 #endif
-{ "howto",	how_to_boot  },
-{ "screen",	screen	     },
+	{ "howto",	how_to_boot  },
+	{ "screen",	screen	     },
 #ifdef notyet
-{ "tape",	tape	     },
-{ "tp",		tape	     },
+	{ "tape",	tape	     },
+	{ "tp",		tape	     },
 #endif
-{ "scsi",	scsi         },
-{ "quit",	exit_program },
-{ 0, 0 }
+	{ "scsi",	scsi         },
+	{ "quit",	exit_program },
+	{ 0, 0 }
 };
 
 
