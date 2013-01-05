@@ -106,8 +106,6 @@ devopen(struct open_file *f, const char *fname, char **file)
 	return 0;
 }
 
-#define MAXDEVNAME 16
-
 int
 make_device(const char *str, int *devp, int *unitp, int *partp, char **fname)
 {

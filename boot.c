@@ -78,19 +78,17 @@
 #include <sys/param.h>
 #include <sys/reboot.h>
 #include <sys/exec.h>
-#include "stinger.h"
-#include "saio.h"
-#include "status.h"
-
-extern struct KernInter	*kiff;
+#include <luna68k/stand/boot/samachdep.h>
+#include <luna68k/stand/boot/stinger.h>
+#include <luna68k/stand/boot/status.h>
+#include <lib/libsa/loadfile.h>
 
 int howto;
-int devtype = MAKEBOOTDEV(4, 0, 6, 0, 0);
 
-char *copyunix(int);
+static int get_boot_device(const char *, int *, int *, int *);
 
 struct exec header;
-char default_file[] = "sd(0,0)vmunix";
+char default_file[] = "sd(0,0)netbsd";
 
 char *how_to_info[] = {
 "RB_ASKNAME	ask for file name to reboot from",
@@ -102,13 +100,6 @@ char *how_to_info[] = {
 "RB_KDB		give control to kernel debugger",
 "RB_RDONLY	mount root fs read-only"
 };
-
-#define TAPE
-#ifdef TAPE /* A.Kojima */
-extern dev_t  rst0;
-extern dev_t nrst0;
-char *stcopyunix(void);
-#endif
 
 int
 how_to_boot(int argc, char *argv[])
@@ -130,14 +121,14 @@ how_to_boot(int argc, char *argv[])
 
 		printf("\n");
 	}
+	return ST_NORMAL;
 }
 
 int
-get_boot_device(char *s)
+get_boot_device(const char *s, int *devp, int *unitp, int *partp)
 {
-	int unit = 0;
-	int part = 0;
-	char *p = s;
+	const char *p = s;
+	int unit, part;
 
 	while (*p != '(') {
 		if (*p == '\0')
@@ -159,288 +150,63 @@ get_boot_device(char *s)
 			part = (part * 10) + (*p - '0');
 	}
 
-	return(MAKEBOOTDEV(4, 0, (6 - unit), unit, part));
+	*devp  = 0;	/* XXX not yet */
+	*unitp = unit;	/* XXX should pass SCSI ID, not logical unit number */
+	*partp = part;
+
+	return 0;
 
 error:
-	return(MAKEBOOTDEV(4, 0, 6, 0, 0));
+	return -1;
 }
 
 int
 boot(int argc, char *argv[])
 {
-	int io;
 	char *line;
 
 	if (argc < 2)
 		line = default_file;
 	else
 		line = argv[1];
-
-	devtype = get_boot_device(line);
 
 	printf("Booting %s\n", line);
 
-#ifdef TAPE /* A.Kojima */
-	if (!strcmp("st", argv[1])) {
-		io = argc < 3 ? 0 : *argv[2] - '0';
-		printf("boot tape file number:%d\n", io);
-		stbootunix(howto, devtype, io);
-		return;
-	}
-#endif
-	io = open(line, 0);
-	if (io >= 0) {
-		bootunix(howto, devtype, io);
-		close(io);
-	}
+	return bootnetbsd(line);
 }
 
 int
-load(int argc, char *argv[])
+bootnetbsd(char *line)
 {
 	int io;
-	char *line;
+	int dev, unit, part;
+	u_long marks[MARK_MAX];
+	void (*entry)(void);
 
-	if (argc < 2)
-		line = default_file;
-	else
-		line = argv[1];
+	if (get_boot_device(line, &dev, &unit, &part) != 0) {
+		printf("Bad file name %s\n", line);
+		return ST_ERROR;
+	}
 
-	printf("loading %s\n", line);
+	/* Note marks[MARK_START] is passed as an load address offset */
+	memset(marks, 0, sizeof(marks));
 
-	io = open(line, 0);
+	io = loadfile(line, marks, LOAD_KERNEL);
 	if (io >= 0) {
-		copyunix(io);
-		printf("\n");
-		close(io);
-	}
-}
-
-int
-bootunix(int howto, int devtype, int io)
-/*	int howto;	*/	/* d7 contains boot flags */
-/*	int devtype;	*/	/* d6 contains boot device */
-{
-	char *load;		/* a5 contains load addr for unix */
-
-	load = copyunix(io);
-
-	printf(" start 0x%x\n", load);
-	asm("	movl %0,d7" : : "d" (howto));
-	asm("	movl %0,d6" : : "d" (devtype));
-	asm("	movl %0,a5" : : "a" (kiff));
-	(*((int (*)(void)) load))();
-}
-
-char *
-copyunix(int io)
-{
-
-	int i;
-	char *load;		/* a5 contains load addr for unix */
-	char *addr;
-
-	/*
-	 * Read a.out file header
-	 */
-
-	i = read(io, (char *)&header, sizeof(struct exec));
-	if (i != sizeof(struct exec) ||
-	    (header.a_magic != 0407 && header.a_magic != 0413 && header.a_magic != 0410)) {
-		printf("illegal magic number ... 0x%x\n");
-		printf("Bad format\n");
-		return(0);
-	}
-
-	load = addr = (char *) (header.a_entry & 0x00FFFFFF);
-
-	printf("%d", header.a_text);
-	if (header.a_magic == 0413 && lseek(io, 0x400, 0) == -1)
-		goto shread;
-
-	/*
-	 * Load TEXT Segment
-	 */
-
-	if (read(io, (char *)addr, header.a_text) != header.a_text)
-		goto shread;
-	addr += header.a_text;
-	if (header.a_magic == 0413 || header.a_magic == 0410)
-		while ((int)addr & CLOFSET)
-			*addr++ = 0;
-
-	/*
-	 * Load DATA Segment
-	 */
-
-	printf("+%d", header.a_data);
-	if (read(io, addr, header.a_data) != header.a_data)
-		goto shread;
-
-	/*
-	 * Clear BSS Segment
-	 */
-
-	addr += header.a_data;
-	printf("+%d", header.a_bss);
-	header.a_bss += 128*512;	/* slop */
-	for (i = 0; i < header.a_bss; i++)
-		*addr++ = 0;
-
-	return(load);
-
-shread:
-	printf("   Short read\n");
-	return(0);
-}
-
-#ifdef TAPE /* A.Kojima */
-int
-stbootunix(int howto, int devtype, int skip)
-/*	int howto;	*/	/* d7 contains boot flags */
-/*	int devtype;	*/	/* d6 contains boot device */
-/*	int skip;	*/	/* tape skip */
-{
-	int i;
-	char *load;		/* a5 contains load addr for unix */
-
-	/*
-	 * Tape rewind and skip
-	 */
-	st_rewind(rst0);
-	for (i = 0; i < skip; i++) {
-		st_skip(rst0);
-	}
-
-	load = stcopyunix();
-
-	st_rewind(rst0);
-
-	printf(" start 0x%x\n", load);
-	asm("	movl %0,d7" : : "d" (howto));
-	asm("	movl %0,d6" : : "d" (devtype));
-	asm("	movl %0,a5" : : "a" (kiff));
-	(*((int (*)(void)) load))();
-}
-
-char *
-stcopyunix(void)
-{
-
-	int i;
-	char *load;		/* a5 contains load addr for unix */
-	char *addr;
-	u_char buf[0x400];
-
-	/*
-	 * Read a.out file header
-	 */
-
-	i = tread(/*io,*/ (char *)&header, sizeof(struct exec));
-	if (i != sizeof(struct exec) ||
-	    (header.a_magic != 0407 && header.a_magic != 0413 && header.a_magic != 0410)) {
-		printf("illegal magic number ... 0x%x\n");
-		printf("Bad format\n");
-		return(0);
-	}
-
-	load = addr = (char *) (header.a_entry & 0x00FFFFFF);
-
-	printf("%d", header.a_text);
-
-	i = 0x400 - i;
-	if (header.a_magic == 0413 && tread(buf, i) != i) { /* easy seek */
-		goto shread;
-	}
-
-	/*
-	 * Load TEXT Segment
-	 */
-
-	if (tread(/*io,*/ (char *)addr, header.a_text) != header.a_text)
-		goto shread;
-	addr += header.a_text;
-	if (header.a_magic == 0413 || header.a_magic == 0410)
-		while ((int)addr & CLOFSET)
-			*addr++ = 0;
-
-	/*
-	 * Load DATA Segment
-	 */
-
-	printf("+%d", header.a_data);
-	if (tread(/*io,*/ addr, header.a_data) != header.a_data)
-		goto shread;
-
-	/*
-	 * Clear BSS Segment
-	 */
-
-	addr += header.a_data;
-	printf("+%d", header.a_bss);
-	header.a_bss += 128*512;	/* slop */
-	for (i = 0; i < header.a_bss; i++)
-		*addr++ = 0;
-
-	return(load);
-
-shread:
-	printf("   Short read\n");
-	return(0);
-}
-
-int
-tread(int addr, int size)
-{
-	static u_char	buf[512];
-	static int	head = 512;
-	static int	tail = 512;
-	int             req_size = size;
-	int		rest = tail - head;
-	
-	if (rest > 0) {
-		if (size <= rest) {
-			bcopy(&buf[head], addr, size);
-			head += size;
-			return size;
-		} else { /* size > rest */
-			bcopy(&buf[head], addr, rest);
-			addr += rest;
-			size -= rest;
-			if (tail != 512) {
-				head = 512;
-				tail = 512;
-				printf("tread() EOF 0\n");
-				return rest;
-			}
-		}
-	}
-
-	/* head = 0; */
-
-	while (size > 512) {
-		if ((tail = stread(rst0, addr, 512)) == 512) {
-			addr += 512;
-			size -= 512;
-		} else { /* eof ( tail < 512 ) */
-			size -= tail;
-			head = tail;
-			printf("tread() EOF 1\n");
-			return req_size - size;
-		}
-	}
-	tail = stread(rst0, buf, 512);
-	if (tail >= size) {
-		bcopy(buf, addr, size);
-		head = size;
-		return req_size;
-	} else {
-		bcopy(buf, addr, tail);
-		head = tail;
-		printf("tread() EOF 2\n");
-		return req_size - size;
-	}
-}
-
+#ifdef DEBUG
+		printf("entry = 0x%lx\n", marks[MARK_ENTRY]);
+		printf("ssym  = 0x%lx\n", marks[MARK_SYM]);
+		printf("esym  = 0x%lx\n", marks[MARK_END]);
 #endif
 
+		/*
+		 * XXX TODO: fill bootinfo about symbols, boot device etc.
+		 */
+
+		entry = (void *)marks[MARK_ENTRY];
+
+		(*entry)();
+	}
+
+	return ST_ERROR;
+}

@@ -103,8 +103,7 @@ char buffer[BUFFSIZE];
 int   argc;
 char *argv[MAXARGS];
 
-char  prompt[16];
-int howto;
+char  prompt[16] = "boot> ";
 
 void
 main(void)
@@ -120,7 +119,10 @@ main(void)
 
 	cninit();
 
-	printf("\n\nStinger ver 0.0 [%s]\n\n", VERS_LOCAL);
+	printf("\n");
+	printf(">> %s, Revision %s\n", bootprog_name, bootprog_rev);
+	printf(">> (based on Stinger ver 0.0 [%s])\n", VERS_LOCAL);
+	printf("\n");
 
 	kiff->maxaddr = (void *) (ROM_memsize -1);
 	kiff->dipsw   = ~((dipsw2 << 8) | dipsw1) & 0xFFFF;
@@ -132,11 +134,6 @@ main(void)
 	printf("(%d MB)\n", i);
 	printf("\n");
 
-	bcopy(VERS_LOCAL, prompt, sizeof(VERS_LOCAL));
-	prompt[sizeof(VERS_LOCAL) - 1]	= '>';
-	prompt[sizeof(VERS_LOCAL)]	= ' ';
-	prompt[sizeof(VERS_LOCAL) + 1]	= 0;
-
 	/*
 	 * IO configuration
 	 */
@@ -147,38 +144,10 @@ main(void)
 
 	howto = reorder_dipsw(dipsw2);
 
-#if 1
-	{
-		int fd;
-		u_long marks[MARK_MAX];
-		char file[] = "sd(0,0)netbsd";
-		void (*entry)(void);
-
-		memset(marks, 0, sizeof marks);
-		printf("loading: %s\n", file);
-		fd = loadfile(file, marks, LOAD_KERNEL);
-		if (fd != -1) {
-			printf("entry = 0x%lx\n", marks[MARK_ENTRY]);
-			printf("ssym  = 0x%lx\n", marks[MARK_SYM]);
-			printf("esym  = 0x%lx\n", marks[MARK_END]);
-
-			entry = (void *)marks[MARK_ENTRY];
-
-			(*entry)();
-		}
-	}
-#endif
-#if 0
 	if ((howto & 0xFE) == 0) {
 		printf("auto-boot %s\n", default_file);
-		
-		i = open(default_file, 0);
-		if (i >= 0) {
-			bootunix(howto, devtype, i);
-			close(i);
-		}
+		bootnetbsd(default_file);
 	}
-#endif
 
 	/*
 	 * Main Loop

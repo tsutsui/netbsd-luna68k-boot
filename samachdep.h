@@ -45,6 +45,8 @@
 #define MHZ_33		4
 #define MHZ_50		6
 
+#define MAXDEVNAME	16
+
 struct consdev;
 struct frame;
 typedef struct label_t {
@@ -70,14 +72,11 @@ void bmdadjust(short, short);
 void bmdclear(void);
 
 /* boot.c */
-extern int devtype;
 extern int howto;
-char *default_file;
-int boot(int, char **);
-int load(int, char **);
+extern char default_file[];
 int how_to_boot(int, char **);
-int bootunix(int, int, int);
-char *copyunix(int);
+int boot(int, char **);
+int bootnetbsd(char *);
 
 /* clock.c */
 /* not yet */
@@ -204,4 +203,4 @@ do {									\
 extern	struct fs_ops file_system_ufs[];
 extern	struct fs_ops file_system_nfs[];
 
-extern	char bootprog_name[], bootprog_rev[], bootprog_kernrev[];
+extern	const char bootprog_name[], bootprog_rev[], bootprog_kernrev[];
