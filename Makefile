@@ -8,10 +8,8 @@ NOMAN= # defined
 
 S= ${.CURDIR}/../../../..
 
-INCLUDES= -I${.CURDIR} -I${.CURDIR}/$S 
-COPTS=	${INCLUDES} ${IDENT} -DKERNEL
 CPPFLAGS+=	-nostdinc -D_STANDALONE
-CPPFLAGS+=	-I${.OBJDIR} -I${S} -I${S}/arch
+CPPFLAGS+=	-I${.CURDIR} -I${.OBJDIR} -I${S} -I${S}/arch
 
 CPPFLAGS+=	-DSUPPORT_DISK
 #CPPFLAGS+=	-DSUPPORT_TAPE
