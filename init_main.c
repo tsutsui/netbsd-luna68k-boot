@@ -154,7 +154,7 @@ main(void)
 	 */
 
 	do {
-		bzero(buffer, BUFFSIZE);
+		memset(buffer, 0, BUFFSIZE);
 		if (getline(prompt, buffer) > 0) {
 			argc = getargs(buffer, argv, sizeof(argv)/sizeof(char *));
 

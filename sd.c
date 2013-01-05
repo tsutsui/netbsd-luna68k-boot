@@ -186,7 +186,7 @@ sdident(struct sd_softc *sc, struct hp_device *hd)
 	sc->sc_blks    = capbuf[0];
 	sc->sc_blksize = capbuf[1];
 
-	bcopy((void *)&inqbuf.vendor_id, idstr, 28);
+	memcpy(idstr, &inqbuf.vendor_id, 28);
 	for (i = 27; i > 23; --i)
 		if (idstr[i] != ' ')
 			break;

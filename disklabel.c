@@ -186,9 +186,9 @@ disklabel(int argc, char *argv[])
 			printf("OMRON Disklabel not found.\n");
 		}
 	} else if (!strcmp(argv[1], "copy")) {
-		bzero(bp, sizeof(struct disklabel));
+		memset(bp, 0, sizeof(struct disklabel));
 
-		bcopy(lbl_buff, bp->d_typename, 16);
+		memcpy(bp->d_typename, lbl_buff, 16);
 
 		bp->d_secsize    = DEV_BSIZE;
 		bp->d_nsectors   = 38;
@@ -222,7 +222,7 @@ disklabel(int argc, char *argv[])
 			bp->d_drivedata[i] = 0;
 		}
 
-		bzero(bp->d_packname, 16);
+		memset(bp->d_packname, 0, 16);
 
 		bp->d_magic    = DISKMAGIC;
 		bp->d_magic2   = DISKMAGIC;

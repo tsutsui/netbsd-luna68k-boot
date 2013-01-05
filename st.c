@@ -190,7 +190,7 @@ stident(struct st_softc *sc, struct hp_device *hd)
 		return (-1);
 	}
 
-	bcopy((void *)&inqbuf.vendor_id, idstr, 28);
+	memcpy(idstr, (void *)&inqbuf.vendor_id, 28);
 	for (i = 27; i > 23; --i)
 		if (idstr[i] != ' ')
 			break;
