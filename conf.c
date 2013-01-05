@@ -82,30 +82,6 @@ struct netif_driver *netif_drivers[] = {
 int	n_netif_drivers = __arraycount(netif_drivers);
 #endif
 
-#if 0
-/*
- * Physical unit/lun detection.
- */
-static int punitzero(int, int, int *);
-
-static int
-punitzero(int ctlr, int slave, int *punit)
-{
-
-	*punit = 0;
-	return 0;
-}
-
-#define	sdpunit		punitzero
-#define	lepunit		punitzero
-
-struct punitsw punitsw[] = {
-	{ sdpunit },
-	{ lepunit },
-};
-int	npunit = __arraycount(punitsw);
-#endif
-
 /*
  * Filesystem configuration
  */
