@@ -76,7 +76,7 @@
 
 #define NBMC	1
 #define NSIO	1
-#define NROM	1
+#define NROM	0	/* XXX doesn't work with framebuffer/keyboard? */
 
 /* XXX - all this could be autoconfig()ed */
 
