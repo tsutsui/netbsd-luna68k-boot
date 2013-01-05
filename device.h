@@ -148,8 +148,6 @@ struct hp_hw {
 #define	PPORT		10
 #define	SIO		11
 
-#ifdef KERNEL
 extern struct hp_ctlr	hp_cinit[];
 extern struct hp_device	hp_dinit[];
 extern struct hp_hw	sc_table[];
-#endif
