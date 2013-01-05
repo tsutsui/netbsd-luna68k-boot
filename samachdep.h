@@ -121,6 +121,12 @@ int splhigh(void);
 void splx(int);
 int getsfc(void);
 int getdfc(void);
+int spl0(void);
+int spl1(void);
+int spl2(void);
+int spl3(void);
+int spl4(void);
+int spl5(void);
 int spl6(void);
 
 /* machdep.c */
