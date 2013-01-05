@@ -100,3 +100,5 @@ do {									\
 } while (0)
 
 #define RBUF_EMPTY(n)	(rcvbuf[n].rb_push == rcvbuf[n].rb_pop ? 1: 0)
+
+extern	struct rcvbuf	rcvbuf[];

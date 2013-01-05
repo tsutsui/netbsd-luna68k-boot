@@ -81,8 +81,6 @@
 #include <luna68k/stand/boot/rcvbuf.h>
 #include <luna68k/stand/boot/preset.h>
 
-extern	struct rcvbuf	rcvbuf[];
-
 void
 bmcintr(void)
 {
