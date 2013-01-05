@@ -130,8 +130,9 @@ void regdump(int *, int);
 char *hexstr(int, int);
 
 /* prf.c */
+#if 0
 int tgetchar(void);
-
+#endif
 
 /* parse.c */
 int check_args(int, char **);
@@ -181,9 +182,6 @@ void sioinit(void);
 
 /* tape.c */
 int tape(int, char **);
-
-/* tgets.c */
-int tgets(char *);
 
 /* trap.c */
 void trap(int, unsigned int, unsigned int, struct frame);

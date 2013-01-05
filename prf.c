@@ -50,13 +50,14 @@ getchar(void)
 	return c;
 }
 
+#if 0
 int
 tgetchar(void)
 {
 	int c;
 
-	if ((c = cngetc()) == 0)
-        	return 0;
+	if ((c = cnscan()) == -1)
+        	return -1;
         
 	if (c == '\r')
 		c = '\n';
@@ -66,6 +67,7 @@ tgetchar(void)
 	}
 	return c;
 }
+#endif
 
 void
 putchar(int c)
