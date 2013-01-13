@@ -1,4 +1,4 @@
-/*	$NetBSD$	*/
+/*	$NetBSD: screen.c,v 1.1 2013/01/05 17:44:24 tsutsui Exp $	*/
 
 /*
  * Copyright (c) 1992 OMRON Corporation.
