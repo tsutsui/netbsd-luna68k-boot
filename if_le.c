@@ -72,16 +72,26 @@
 #include <lib/libsa/netif.h>
 
 #include <luna68k/stand/boot/samachdep.h>
+#include <luna68k/stand/boot/device.h>
 
+/* libsa netif_driver glue functions */
 static int  le_match(struct netif *, void *);
 static int  le_probe(struct netif *, void *);
-static void le_attach(struct iodesc *, void *);
+static void le_init(struct iodesc *, void *);
 static int  le_get(struct iodesc *, void *, size_t, saseconds_t);
 static int  le_put(struct iodesc *, void *, size_t);
 static void le_end(struct netif *);
 
 static void myetheraddr(uint8_t *);
 
+/* luna68k driver glue stuff */
+struct driver ledriver = {
+	leinit,
+	"le",
+	NULL
+};
+
+/* libsa netif glue stuff */
 struct netif_stats le_stats;
 struct netif_dif le_ifs[] = {
 	{ 0, 1, &le_stats, 0, 0, },
@@ -91,7 +101,7 @@ struct netif_driver le_netif_driver = {
 	"le",
 	le_match,
 	le_probe,
-	le_attach,
+	le_init,
 	le_get,
 	le_put,
 	le_end,
@@ -103,20 +113,47 @@ struct netif_driver le_netif_driver = {
 int debug;
 #endif
 
+int
+leinit(void *arg)
+{
+	struct hp_device *hd = arg;
+	void *cookie;
+	void *reg, *mem;
+	uint8_t eaddr[6];
+
+	reg = hd->hp_addr;
+	mem = (void *)0x71010000;	/* XXX */
+
+	myetheraddr(eaddr);
+
+	cookie = lance_attach(hd->hp_unit, reg, mem, eaddr);
+	if (cookie == NULL)
+		return 0;
+
+	printf("%s%d: Am7990 LANCE Ethernet, mem at 0x%x\n",
+	    hd->hp_driver->d_name, hd->hp_unit, (uint32_t)mem);
+	printf("%s%d: Ethernet address = %s\n",
+	    hd->hp_driver->d_name, hd->hp_unit,
+	    ether_sprintf(eaddr));
+
+	return 1;
+}
+
 static int
 le_match(struct netif *nif, void *machdep_hint)
 {
-	uint8_t *reg;
+	void *cookie;
+	uint8_t *eaddr;
 
-	if (machtype == LUNA_I)
-		reg = (void *)0xf1000000; 
-	else
-		reg = (void *)0xf0000000;
+	/* XXX should check nif_unit and unit number in machdep_hint path */
 
-	if (badaddr(reg)) {
-		printf("%s: no valid device\n", __func__);
+	cookie = lance_cookie(nif->nif_unit);
+	if (cookie == NULL)
 		return 0;
-	}
+
+	eaddr = lance_eaddr(cookie);
+	if (eaddr == NULL)
+		return 0;
 
 	return 1;
 }
@@ -125,45 +162,31 @@ static int
 le_probe(struct netif *nif, void *machdep_hint)
 {
 
+	/* XXX what should be checked? */
+
 	return 0;
 }
 
 static void
-le_attach(struct iodesc *desc, void *machdep_hint)
+le_init(struct iodesc *desc, void *machdep_hint)
 {
 	struct netif *nif = desc->io_netif;
 	struct netif_dif *dif = &nif->nif_driver->netif_ifs[nif->nif_unit];
 	void *cookie;
-	void *reg, *mem;
-	uint8_t eaddr[6];
+	uint8_t *eaddr;
 
 #ifdef DEBUG
 	printf("%s\n", __func__);
 #endif
-	if (machtype == LUNA_I)
-		reg = (void *)0xf1000000; 
-	else
-		reg = (void *)0xf0000000;
 
-	mem = (void *)0x71010000;
+	cookie = lance_cookie(nif->nif_unit);
+	eaddr = lance_eaddr(cookie);
 
-	myetheraddr(eaddr);
+	lance_init(cookie);
 
-	printf("address = 0x%x, ethernet address = %s\n",
-	    (uint32_t)reg, ether_sprintf(eaddr));
-
-	cookie = lance_attach(nif->nif_unit, reg, mem, eaddr);
-	if (cookie == NULL) {
-		printf("%s: attach failed\n", __func__);
-//		exit(0);
-	}
-
-	if (!lance_init(cookie)) {
-		printf("%s: initialization failed\n", __func__);
-//		exit(0);
-	}
-	memcpy(desc->myea, eaddr, 6);
+	/* fill glue stuff */
 	dif->dif_private = cookie;
+	memcpy(desc->myea, eaddr, 6);
 }
 
 static int

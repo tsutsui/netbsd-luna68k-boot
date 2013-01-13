@@ -47,7 +47,7 @@ static void lance_setup(struct le_softc *);
 static bool lance_set_initblock(struct le_softc *);
 static bool lance_do_initialize(struct le_softc *);
 
-#define NLE	2
+#define NLE	1	/* XXX for now */
 static struct le_softc lesc[NLE];
 
 void *
@@ -70,6 +70,33 @@ lance_attach(int unit, void *reg, void *mem, uint8_t *eaddr)
 	memcpy(sc->sc_enaddr, eaddr, 6);
 
 	return sc;
+}
+
+void *
+lance_cookie(int unit)
+{
+	struct le_softc *sc;
+
+	if (unit >= NLE)
+		return NULL;
+
+	sc = &lesc[unit];
+
+	if (sc->sc_reg == NULL)
+		return NULL;
+
+	return sc;
+}
+
+uint8_t *
+lance_eaddr(void *cookie)
+{
+	struct le_softc *sc = cookie;
+
+	if (sc == NULL || sc->sc_reg == NULL)
+		return NULL;
+
+	return sc->sc_enaddr;
 }
 
 bool

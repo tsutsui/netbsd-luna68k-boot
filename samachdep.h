@@ -107,6 +107,9 @@ int fsrestore(int, char **);
 /* getline.c */
 int getline(char *, char *);
 
+/* if_le.c */
+int leinit(void *);
+
 /* init_main.c */
 extern int nplane;
 extern int machtype;
@@ -116,6 +119,8 @@ int kbd_decode(u_char);
 
 /* lance.c */
 void *lance_attach(int, void *, void *, uint8_t *);
+void *lance_cookie(int);
+uint8_t *lance_eaddr(void *);
 bool lance_init(void *);
 int lance_get(void *, void *, size_t);
 bool lance_put(void *, void *, size_t);

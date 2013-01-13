@@ -80,6 +80,7 @@
 
 extern struct driver scdriver;
 extern struct driver sddriver;
+extern struct driver ledriver;
 extern struct driver stdriver;
 
 struct hp_ctlr hp_cinit[] = {
@@ -92,6 +93,7 @@ struct hp_device hp_dinit[] = {
 /*driver,	cdriver,	unit,	ctlr,	slave,	addr,	dk,	flags*/
 { &sddriver,	&scdriver,	0,	0,	6,	C 0x0,	1,	0x0 },
 { &sddriver,	&scdriver,	1,	0,	5,	C 0x0,	1,	0x0 },
+{ &ledriver,	NULL,		0,	0,	0,	C 0x0,	0,	0x0 },
 #ifdef notyet
 { &stdriver,	&scdriver,	0,	0,	4,	C 0x0,	0,	0x0 },
 #endif
