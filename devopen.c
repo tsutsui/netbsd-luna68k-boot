@@ -101,6 +101,11 @@ devopen(struct open_file *f, const char *fname, char **file)
 	}
 
 	file_system[0] = file_system_ufs[0];
+#ifdef SUPPORT_ETHERNET
+	if (dev == 1)
+		file_system[0] = file_system_nfs[0];
+#endif
+
 	f->f_dev = dp;
 
 	return 0;

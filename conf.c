@@ -39,6 +39,7 @@
 #include <netinet/in_systm.h>
 
 #include <lib/libsa/stand.h>
+#include <lib/libsa/dev_net.h>
 #include <lib/libsa/nfs.h>
 #include <lib/libsa/ufs.h>
 
@@ -56,6 +57,10 @@
 #define	netstrategy	xxstrategy
 #define	netopen		xxopen
 #define	netclose	xxclose
+#else
+#define	netstrategy	net_strategy
+#define	netopen		net_open
+#define	netclose	net_close
 #endif
 #define	netioctl	noioctl
 
@@ -76,8 +81,10 @@ struct devsw devsw[] = {
 int	ndevs = __arraycount(devsw);
 
 #ifdef SUPPORT_ETHERNET
+struct open_file files[SOPEN_MAX];
+extern struct netif_driver le_netif_driver;
 struct netif_driver *netif_drivers[] = {
-	&le_driver,
+	&le_netif_driver,
 };
 int	n_netif_drivers = __arraycount(netif_drivers);
 #endif

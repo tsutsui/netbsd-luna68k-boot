@@ -7,16 +7,18 @@ NOMAN= # defined
 .include <bsd.sys.mk>
 
 S= ${.CURDIR}/../../../..
+LIBSADIR=	${S}/lib/libsa
 
 CPPFLAGS+=	-nostdinc -D_STANDALONE
 CPPFLAGS+=	-I${.CURDIR} -I${.OBJDIR} -I${S} -I${S}/arch
 
 CPPFLAGS+=	-DSUPPORT_DISK
 #CPPFLAGS+=	-DSUPPORT_TAPE
-#CPPFLAGS+=	-DSUPPORT_ETHERNET
-#CPPFLAGS+=	-DSUPPORT_DHCP -DSUPPORT_BOOTP
+CPPFLAGS+=	-DSUPPORT_ETHERNET
+CPPFLAGS+=	-DSUPPORT_DHCP -DSUPPORT_BOOTP
 #CPPFLAGS+=	-DBOOTP_DEBUG -DNETIF_DEBUG -DETHER_DEBUG -DNFS_DEBUG
 #CPPFLAGS+=	-DRPC_DEBUG -DRARP_DEBUG -DNET_DEBUG -DDEBUG -DPARANOID
+CPPFLAGS+=	-DLIBSA_PRINTF_WIDTH_SUPPORT
 
 CFLAGS=		-Os -msoft-float
 CFLAGS+=	-ffreestanding
@@ -44,6 +46,11 @@ SRCS+=	scsi.c sc.c sd.c
 SRCS+=	disklabel.c
 #SRCS+=	fsdump.c
 SRCS+=	ufs_disksubr.c
+
+# netboot support
+SRCS+=	if_le.c lance.c getsecs.c
+.PATH: ${LIBSADIR}
+SRCS+=	dev_net.c
 
 PROG=   boot
 

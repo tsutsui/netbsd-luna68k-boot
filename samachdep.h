@@ -114,6 +114,14 @@ extern int machtype;
 /* kbd.c */
 int kbd_decode(u_char);
 
+/* lance.c */
+void *lance_attach(int, void *, void *, uint8_t *);
+bool lance_init(void *);
+int lance_get(void *, void *, size_t);
+bool lance_put(void *, void *, size_t);
+bool lance_end(void *); 
+int lance_intr(void);
+
 /* locore.S */
 extern	u_int bootdev;
 extern int dipsw1, dipsw2;

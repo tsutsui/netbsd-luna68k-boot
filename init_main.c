@@ -78,6 +78,9 @@
 #include <luna68k/stand/boot/romvec.h>
 #include <luna68k/stand/boot/status.h>
 #include <lib/libsa/loadfile.h>
+#ifdef SUPPORT_ETHERNET
+#include <lib/libsa/dev_net.h>
+#endif
 
 static int get_plane_numbers(void);
 static int reorder_dipsw(int);
@@ -148,6 +151,10 @@ main(void)
 	/*
 	 * IO configuration
 	 */
+
+#ifdef SUPPORT_ETHERNET
+	try_bootp = 1;
+#endif
 
 	find_devs();
 	configure();
