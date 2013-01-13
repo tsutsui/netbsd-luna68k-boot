@@ -81,7 +81,6 @@ struct devsw devsw[] = {
 int	ndevs = __arraycount(devsw);
 
 #ifdef SUPPORT_ETHERNET
-struct open_file files[SOPEN_MAX];
 extern struct netif_driver le_netif_driver;
 struct netif_driver *netif_drivers[] = {
 	&le_netif_driver,
