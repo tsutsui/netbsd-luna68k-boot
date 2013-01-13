@@ -36,11 +36,11 @@
 #define	LERBUF		8
 #define	LERBUFLOG2	3
 #define	LE_RLEN		(LERBUFLOG2 << 13)
-#define LE_NEXTRMD(x)	(((x) + 1) & (LERBUF - 1))
+#define	LE_NEXTRMD(x)	(((x) + 1) & (LERBUF - 1))
 #define	LETBUF		1
 #define	LETBUFLOG2	0
 #define	LE_TLEN		(LETBUFLOG2 << 13)
-#define LE_NEXTTMD(x)	(((x) + 1) & (LETBUF - 1))
+#define	LE_NEXTTMD(x)	(((x) + 1) & (LETBUF - 1))
 
 /* Local Area Network Controller for Ethernet (LANCE) registers */
 struct lereg {
