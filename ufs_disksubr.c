@@ -89,7 +89,7 @@
  * Returns null on success and an error string on failure.
  */
 char *
-readdisklabel(int dev, int (*strat)(void *, int, daddr_t, size_t, void *, size_t *), struct disklabel *lp)
+readdisklabel(int ctlr, int id, struct disklabel *lp)
 {
 	u_char *bp = lbl_buff;
 	struct disklabel *dlp;
@@ -106,7 +106,7 @@ readdisklabel(int dev, int (*strat)(void *, int, daddr_t, size_t, void *, size_t
 		lp->d_partitions[0].p_size = 0x1fffffff;
 	lp->d_partitions[0].p_offset = 0;
 
-	if (scsi_immed_command(0, dev, 0, &cdb, bp, DEV_BSIZE) != 0) {
+	if (scsi_immed_command(ctlr, id, 0, &cdb, bp, DEV_BSIZE) != 0) {
 		msg = "I/O error";
 	} else {
 		for (dlp = (struct disklabel *)bp;

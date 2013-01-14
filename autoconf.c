@@ -80,6 +80,7 @@
 
 #include <sys/param.h>
 #include <sys/dkstat.h>
+#include <machine/cpu.h>
 #include <lib/libkern/libkern.h>
 #include <luna68k/stand/boot/samachdep.h>
 #include <luna68k/stand/boot/device.h>
@@ -499,6 +500,10 @@ find_devs(void)
 	setup_hw(hw, (char *) 0xe1000000, 0xe, SCSI,     0xe, "MB89352  (SPC)");
 	hw++;
 
+	if (machtype == LUNA_II && !badaddr((void *) 0xe1000040)) {
+		setup_hw(hw, (char *) 0xe1000040, 0xe, SCSI,     0xe, "MB89352  (SPC)");
+		hw++;
+	}
 	if (!badaddr((void *) 0xf1000000)) {
 		setup_hw(hw, (char *) 0xf1000000, 0xf, NET,      0xf, "Am7990 (LANCE)");
 		hw++;
