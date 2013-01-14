@@ -246,8 +246,6 @@ Lbssclr:
 
 	/* XXX should be generated via assym.h */
 	CACHE_OFF = 0x0808
-	CACHE_ON  = 0x3919
-	CACHE40_ON = 0x80008000
 	DC_FREEZE = 0x0200
 	CPU_68030 = 1
 	CPU_68040 = 2
@@ -259,13 +257,9 @@ Lbssclr:
 	movc	%cacr,%d0		| read it back
 	tstl	%d0			| zero?
 	jeq	Lnot68030		| yes, we have 68040
-	movl	#CACHE_ON,%d0
-	movc	%d0,%cacr		| turn on both caches
 	movl	#CPU_68030,%d0
 	jra	Lstart0
 Lnot68030:
-	movl	#CACHE40_ON,%d0
-	movc	%d0,%cacr		| turn on both caches
 	movl	#CPU_68040,%d0
 Lstart0:
 	movl	%d0,_C_LABEL(cputype)
