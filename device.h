@@ -109,7 +109,6 @@ struct	devqueue {
 
 struct hp_hw {
 	char	*hw_addr;	/* physical address of registers */
-	short	hw_sc;		/* select code (if applicable) */
 	short	hw_type;	/* type (defined below) */
 	char	*hw_name;	/* HP product name */
 };
