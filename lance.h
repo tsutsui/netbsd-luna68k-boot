@@ -1,4 +1,4 @@
-/*	$NetBSD$ */
+/*	$NetBSD: lance.h,v 1.1 2013/01/13 14:10:55 tsutsui Exp $ */
 
 /*-
  * Copyright (c) 1982, 1992, 1993

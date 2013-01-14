@@ -1,4 +1,4 @@
-/*	$NetBSD: conf.c,v 1.1 2013/01/05 17:44:24 tsutsui Exp $	*/
+/*	$NetBSD: conf.c,v 1.2 2013/01/13 14:10:55 tsutsui Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986, 1990, 1993
