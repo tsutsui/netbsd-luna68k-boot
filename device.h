@@ -111,8 +111,6 @@ struct hp_hw {
 	char	*hw_addr;	/* physical address of registers */
 	short	hw_sc;		/* select code (if applicable) */
 	short	hw_type;	/* type (defined below) */
-	short	hw_id;		/* HW returned id */
-	short	hw_id2;		/* secondary HW id (displays) */
 	char	*hw_name;	/* HP product name */
 };
 
