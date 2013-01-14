@@ -6,3 +6,4 @@ is taken as the current.
 
 1.0:	Initial revision, based on 4.4BSD-Lite2/luna68k and NetBSD/hp300
 1.1:	Add netboot support.
+1.2:	Add support for secondary SPC SCSI on LUNA-II.
