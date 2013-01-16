@@ -222,7 +222,8 @@ do {									\
 	} while (__N > 0);						\
 } while (/* CONSTCOND */ 0)
 
-extern	struct fs_ops file_system_ufs[];
+extern	struct fs_ops file_system_disk[];
+extern	int nfsys_disk;
 extern	struct fs_ops file_system_nfs[];
 
 extern	const char bootprog_name[], bootprog_rev[], bootprog_kernrev[];
