@@ -144,6 +144,9 @@ int spl4(void);
 int spl5(void);
 int spl6(void);
 
+/* ls.c */
+int cmd_ls(int, char **);
+
 /* machdep.c */
 void straytrap(int);
 int badaddr(volatile void *);

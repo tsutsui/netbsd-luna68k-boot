@@ -112,6 +112,7 @@ struct command_entry entries[] = {
 	{ "fsrestore",	fsrestore    },
 #endif
 	{ "howto",	how_to_boot  },
+	{ "ls",		cmd_ls       },
 	{ "screen",	screen	     },
 #ifdef notyet
 	{ "tape",	tape	     },

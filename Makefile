@@ -18,6 +18,7 @@ CPPFLAGS+=	-DSUPPORT_ETHERNET
 CPPFLAGS+=	-DSUPPORT_DHCP -DSUPPORT_BOOTP
 #CPPFLAGS+=	-DBOOTP_DEBUG -DNETIF_DEBUG -DETHER_DEBUG -DNFS_DEBUG
 #CPPFLAGS+=	-DRPC_DEBUG -DRARP_DEBUG -DNET_DEBUG -DDEBUG -DPARANOID
+CPPFLAGS+=	-DLIBSA_ENABLE_LS_OP
 CPPFLAGS+=	-DLIBSA_PRINTF_WIDTH_SUPPORT
 
 CFLAGS=		-Os -msoft-float
@@ -46,6 +47,7 @@ SRCS+=	scsi.c sc.c sd.c
 SRCS+=	disklabel.c
 #SRCS+=	fsdump.c
 SRCS+=	ufs_disksubr.c
+SRCS+=	ls.c
 
 # netboot support
 SRCS+=	if_le.c lance.c getsecs.c
@@ -69,7 +71,7 @@ Z_AS=		library
 
 ### find out what to use for libsa
 SA_AS=		library
-SAMISCMAKEFLAGS+=SA_USE_LOADFILE=yes SA_USE_CREAD=yes
+SAMISCMAKEFLAGS+=SA_USE_LOADFILE=yes SA_USE_CREAD=yes SA_ENABLE_LS_OP=yes
 .include "${S}/lib/libsa/Makefile.inc"
 
 LIBS=	${SALIB} ${ZLIB} ${KERNLIB}
