@@ -1,4 +1,4 @@
-/*	$NetBSD$	*/
+/*	$NetBSD: ls.c,v 1.1 2013/01/16 15:15:01 tsutsui Exp $	*/
 
 /*
  * Copyright (c) 2001 Minoura Makoto
