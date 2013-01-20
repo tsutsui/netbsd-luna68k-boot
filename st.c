@@ -82,19 +82,13 @@
 
 #include <sys/param.h>
 #include <sys/mtio.h>
-#include "scsireg.h"
-#include "device.h"
+#include <luna68k/stand/boot/scsireg.h>
+#include <luna68k/stand/boot/device.h>
 
-extern int scsi_test_unit_rdy(int, int, int);
-extern int scsi_request_sense(int, int, int, u_char *, unsigned int);
-extern int scsi_immed_command(int, int, int, struct scsi_fmt_cbd *, u_char *, unsigned int);
-
-extern int scgo(void);
-
-int	stinit(struct hp_device *), ststrategy(void), ststart(int), stintr(int, int);
+static int stinit(void *);
 
 struct	driver stdriver = {
-	stinit, "st", ststart, (int (*)(void)) 0, stintr, (int (*)(void)) 0
+	stinit, "st", NULL
 };
 
 struct	st_softc {
@@ -114,7 +108,7 @@ struct	st_softc {
 #define STF_LEOT	0x0020
 #define STF_MOVED	0x0040
 
-struct	scsi_fmt_sense stsense[NST];
+static struct	scsi_fmt_sense stsense[NST];
 
 #define	stunit(x)	(minor(x) & 3)
 #define	stpunit(x)	((x) & 7)
@@ -133,18 +127,25 @@ struct	scsi_fmt_sense stsense[NST];
  * Initialize
  */
 
-int
-stinit(struct hp_device *hd)
+static int
+stinit(void *arg)
 {
-	struct st_softc *sc = &st_softc[hd->hp_unit];
+	struct hp_device *hd = arg;
+	struct st_softc *sc;
+	int unit;
 
+	unit = hd->hp_unit;
+	if (unit < 0 || unit >= NST)
+		return 0;
+
+	sc = &st_softc[unit];
 	sc->sc_hd = hd;
 	sc->sc_punit = stpunit(hd->hp_flags);
 	sc->sc_type = stident(sc, hd);
 	if (sc->sc_type < 0)
 		return(0);
 	sc->sc_dq.dq_ctlr = hd->hp_ctlr;
-	sc->sc_dq.dq_unit = hd->hp_unit;
+	sc->sc_dq.dq_unit = unit;
 	sc->sc_dq.dq_slave = hd->hp_slave;
 	sc->sc_dq.dq_driver = &stdriver;
 	sc->sc_flags = STF_ALIVE;
@@ -154,7 +155,7 @@ stinit(struct hp_device *hd)
 static struct scsi_inquiry inqbuf;
 static struct scsi_fmt_cdb inq = {
 	6,
-	CMD_INQUIRY, 0, 0, 0, sizeof(inqbuf), 0
+	{ CMD_INQUIRY, 0, 0, 0, sizeof(inqbuf), 0 }
 };
 
 int
@@ -262,10 +263,6 @@ ststrategy(void)
 {
 }
 
-int
-ststart(void)
-{
-}
 
 /*
  * Interrupt
@@ -312,12 +309,6 @@ sterror(int unit, struct st_softc *sc, struct hp_device *hp, int stat)
 	return(cond);
 }
 
-int
-stintr(void)
-{
-}
-
-
 /*
  * RAW Device Routines
  */
@@ -349,7 +340,10 @@ sense_key(int key)
 		return("Unknown Error");
 }
 
-static struct scsi_fmt_cdb st_cmd  = { 6, 0, 0, 0, 0, 0, 0 };
+static struct scsi_fmt_cdb st_cmd  = {
+	6,
+	{ 0, 0, 0, 0, 0, 0 }
+};
 
 u_char sensebuf[8];
 
@@ -440,11 +434,6 @@ stwrite(dev_t dev, char *buf, int size)
 
 		return(-1);
 	}
-}
-
-int
-stioctl(dev_t dev, int cmd, char *data, int flag, struct proc *p)
-{
 }
 
 int
@@ -563,13 +552,4 @@ st_skip(dev_t dev)
 
 		return(-1);
 	}
-}
-
-/*
- * Dump
- */
-
-int
-stdump(dev_t dev)
-{
 }
