@@ -59,7 +59,6 @@
  */
 
 #include <sys/param.h>
-#include <sys/systm.h>
 
 #include <machine/cpu.h>
 

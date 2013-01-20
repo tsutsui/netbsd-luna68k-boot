@@ -71,7 +71,6 @@
  */
 
 #include <sys/param.h>
-#include <sys/systm.h>
 #include <machine/cpu.h>
 #include <luna68k/stand/boot/samachdep.h>
 #include <luna68k/stand/boot/stinger.h>

@@ -76,7 +76,6 @@
  */
 
 #include <sys/param.h>
-#include <sys/systm.h>
 #include <luna68k/stand/boot/samachdep.h>
 #include <luna68k/stand/boot/rcvbuf.h>
 #include <luna68k/stand/boot/preset.h>

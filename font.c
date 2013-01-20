@@ -77,7 +77,6 @@
  */
 
 #include <sys/param.h>
-#include <sys/systm.h>
 
 u_short bmdfont[][20] = {
 	{			/* 0x00 */

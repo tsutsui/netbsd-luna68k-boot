@@ -78,7 +78,6 @@
 
 
 #include <sys/param.h>
-#include <sys/systm.h>
 #include <luna68k/stand/boot/samachdep.h>
 
 #define isprint(c)	( c < 0x20 ? 0 : 1)
