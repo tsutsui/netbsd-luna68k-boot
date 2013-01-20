@@ -80,11 +80,6 @@
 #include <luna68k/stand/boot/rcvbuf.h>
 #include <luna68k/stand/boot/preset.h>
 
-void
-bmcintr(void)
-{
-}
-
 /*
  * Following are all routines needed for SIO to act as console
  */

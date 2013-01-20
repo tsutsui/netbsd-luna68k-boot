@@ -59,7 +59,6 @@ void configure(void);
 void find_devs(void);
 
 /* bmc.c */
-void bmcintr(void);
 void bmccnprobe(struct consdev *);
 void bmccninit(struct consdev *);
 int  bmccngetc(dev_t);
