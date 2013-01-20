@@ -174,7 +174,7 @@ scsi(int argc, char *argv[])
 		while (i == 0) {
 			printf("Do you really want to format SCSI %d device ? [y/n]: ",
 			       scsi_device);
-			i = cngetc();
+			i = getchar();
 			printf("\n");
 			if ((i != 'y') && (i != 'Y') && (i != 'n') && (i != 'N'))
 				i = 0;

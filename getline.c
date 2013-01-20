@@ -87,29 +87,28 @@ getline(char *prompt, char *buff)
 	printf("%s", prompt);
 
 	for(;;) {
-		c = cngetc() & 0x7F;
+		c = getchar() & 0x7F;
 
 		switch (c) {
 		case 0x0a:
 		case 0x0d:
-			cnputc('\r');
-			cnputc('\n');
+			putchar('\n');
 			*p = '\0';
 			goto outloop;
 
 		case 0x08:
 		case 0x7f:
 			if (p > buff) {
-				cnputc(0x08);
-				cnputc(' ');
-				cnputc(0x08);
+				putchar(0x08);
+				putchar(' ');
+				putchar(0x08);
 				p--;
 			}
 			break;
 
 		default:
 			*p++ = c;
-			cnputc(c);
+			putchar(c);
 			break;
 		}
 	}
