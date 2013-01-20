@@ -535,8 +535,12 @@ ENTRY_NOPROFILE(lev5intr)
 	moveml	%sp@+,#0x0303		| restore scratch regs
 	addql	#2,%sp			| pop pad word
 	jra	_ASM_LABEL(rei)		| all done
+
 ENTRY_NOPROFILE(hardclock)
+	addql	#1,_C_LABEL(tick)
 	rts
+
+BSS(tick,4)
 
 ENTRY_NOPROFILE(lev6intr)
 	clrw	%sp@-

@@ -167,9 +167,8 @@ siocngetc(dev_t dev)
 {
 	int c, unit = siounit(dev);
 
-	while (RBUF_EMPTY(unit)) {
-		DELAY(10);
-	}
+	if (RBUF_EMPTY(unit))
+		return 0;
 
 	POP_RBUF(unit, c);
 

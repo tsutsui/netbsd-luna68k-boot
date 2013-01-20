@@ -116,9 +116,8 @@ bmccngetc(dev_t dev)
 	int c;
 	int unit = 1;
 
-	while (RBUF_EMPTY(unit)) {
-		DELAY(10);
-	}
+	if (RBUF_EMPTY(unit))
+		return 0;
 
 	POP_RBUF(unit, c);
 

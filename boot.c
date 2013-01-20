@@ -207,6 +207,7 @@ bootnetbsd(char *line)
 
 		(*entry)();
 	}
+	printf("Booting kernel failed. (%s)\n", strerror(errno));
 
 	return ST_ERROR;
 }
