@@ -27,8 +27,9 @@ CFLAGS+=	-Wall -Werror
 CFLAGS+=	-Wstrict-prototypes -Wmissing-prototypes -Wpointer-arith
 CFLAGS+=	-Wno-pointer-sign
 
+TEXTADDR=	700000
 LDSCRIPT=	${.CURDIR}/boot.ldscript
-LINKFORMAT=	-static -N -T ${LDSCRIPT}
+LINKFORMAT=	-static -N -Ttext ${TEXTADDR} -T ${LDSCRIPT}
 
 SRCS=	locore.S
 SRCS+=	init_main.c autoconf.c ioconf.c
