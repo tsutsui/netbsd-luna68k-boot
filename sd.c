@@ -199,7 +199,7 @@ sdident(struct sd_softc *sc, struct hp_device *hd)
 	printf("sd%d: %s %s rev %s", hd->hp_unit, idstr, &idstr[8],
 	       &idstr[24]);
 
-	printf(", %d %d byte blocks\n", sc->sc_blks, sc->sc_blksize);
+	printf(", %d bytes/sect x %d sectors\n", sc->sc_blksize, sc->sc_blks);
 	if (sc->sc_blksize != DEV_BSIZE) {
 		if (sc->sc_blksize < DEV_BSIZE) {
 			printf("sd%d: need %d byte blocks - drive ignored\n",
