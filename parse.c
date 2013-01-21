@@ -1,4 +1,4 @@
-/*	$NetBSD: parse.c,v 1.2 2013/01/16 15:15:01 tsutsui Exp $	*/
+/*	$NetBSD: parse.c,v 1.3 2013/01/21 11:58:12 tsutsui Exp $	*/
 
 /*
  * Copyright (c) 1992 OMRON Corporation.

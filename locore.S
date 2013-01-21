@@ -1,4 +1,4 @@
-/*	$NetBSD: locore.S,v 1.7 2013/01/20 03:40:55 tsutsui Exp $	*/
+/*	$NetBSD: locore.S,v 1.8 2013/01/21 11:58:12 tsutsui Exp $	*/
 
 /*
  * Copyright (c) 1992 OMRON Corporation.

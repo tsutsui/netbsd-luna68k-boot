@@ -1,4 +1,4 @@
-/*	$NetBSD$	*/
+/*	$NetBSD: awaitkey.c,v 1.1 2013/01/21 11:58:12 tsutsui Exp $	*/
 
 /*-
  * Copyright (c) 2013 Izumi Tsutsui.  All rights reserved.
