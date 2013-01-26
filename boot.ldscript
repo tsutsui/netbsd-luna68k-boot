@@ -1,4 +1,4 @@
-/*	$NetBSD: boot.ldscript,v 1.4 2013/01/20 02:35:13 tsutsui Exp $	*/
+/*	$NetBSD: boot.ldscript,v 1.5 2013/01/26 16:00:04 tsutsui Exp $	*/
 
 OUTPUT_FORMAT("elf32-m68k")
 OUTPUT_ARCH(m68k)
