@@ -74,7 +74,6 @@ void bmdclear(void);
 
 /* boot.c */
 extern int howto;
-extern char default_file[];
 int how_to_boot(int, char **);
 int boot(int, char **);
 int bootnetbsd(char *);
@@ -116,6 +115,7 @@ extern int cpuspeed;
 extern int hz;
 extern int nplane;
 extern int machtype;
+extern char default_file[];
 
 /* kbd.c */
 int kbd_decode(u_char);

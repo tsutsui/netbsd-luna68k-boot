@@ -88,7 +88,6 @@ int howto;
 static int get_boot_device(const char *, int *, int *, int *);
 
 struct exec header;
-char default_file[] = "sd(0,0)netbsd";
 
 char *how_to_info[] = {
 	"RB_ASKNAME	ask for file name to reboot from",
