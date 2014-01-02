@@ -1,4 +1,4 @@
-/*	$NetBSD: font.c,v 1.2 2013/01/20 13:35:43 tsutsui Exp $	*/
+/*	$NetBSD: font.c,v 1.3 2014/01/02 20:02:00 tsutsui Exp $	*/
 
 /*
  * Copyright (c) 1992 OMRON Corporation.
