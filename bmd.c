@@ -80,8 +80,6 @@
 #include <sys/param.h>
 #include <luna68k/stand/boot/samachdep.h>
 
-#define isprint(c)	( c < 0x20 ? 0 : 1)
-
 /*
  *  RFCNT register
  */
@@ -94,6 +92,7 @@ union bmd_rfcnt {
 	uint32_t u;
 };
 
+#define isprint(c)	((c) >= 0x20 && (c) < 0x7f)
 
 /*
  *  Width & Height
