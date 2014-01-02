@@ -78,7 +78,7 @@
 
 #include <sys/param.h>
 
-u_short bmdfont[][20] = {
+const uint16_t bmdfont[][20] = {
 	{			/* 0x00 */
 		0x0000,		/* ---------------- */
 		0x0000,		/* ---------------- */

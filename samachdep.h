@@ -98,7 +98,7 @@ int disklabel(int, char **);
 void exec_hp300(char *, u_long, int);
 
 /* font.c */
-extern u_short bmdfont[][20];
+extern const uint16_t bmdfont[][20];
 
 /* fsdump.c */
 int fsdump(int, char **);

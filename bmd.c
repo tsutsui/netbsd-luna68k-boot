@@ -464,8 +464,9 @@ bmdclear(void)
 void
 bmd_draw_char(char *raddr, char *waddr, int col, int row, int c)
 {
-	volatile uint16_t *p, *q, *fp;
+	volatile uint16_t *p, *q;
 	volatile uint32_t *lp, *lq;
+	const uint16_t *fp;
 	int i;
 
 	fp = &bmdfont[c][0];
