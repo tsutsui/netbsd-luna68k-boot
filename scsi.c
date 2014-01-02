@@ -84,9 +84,9 @@
 
 int scsi_device = 6;
 
-#define SENSBUFF 8					/* 6/10/93P%$%98.1i%$%P$G%;%s%9%G!<%? */
-							/* $ND9$5$r#8/usr/src/sys/luna68k/stand/SCCS/s.scsi.c$%H0JFb$K8GDj$7$F */
-u_char	sensbuff[SENSBUFF];				/* #80J>e$OL50UL#$G$"$k!#         */
+#define SENSBUFF 8					/* デバイスドライバでセンスデータ */
+							/* の長さを８バイト以内に固定して */
+u_char	sensbuff[SENSBUFF];				/* ８以上は無意味である。         */
 
 static struct scsi_inquiry inquirybuf;
 static struct scsi_fmt_cdb inquiry = {
