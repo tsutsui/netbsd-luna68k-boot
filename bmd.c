@@ -98,14 +98,14 @@ union bmd_rfcnt {
  *  Width & Height
  */
 
-#define	PB_WIDTH	2048			/* Plane Width   (Bit) */
-#define	PB_HEIGHT	1024			/* Plane Hight   (Bit) */
+#define PB_WIDTH	2048			/* Plane Width   (Bit) */
+#define PB_HEIGHT	1024			/* Plane Hight   (Bit) */
 #define PL_WIDTH	64			/* Plane Width  (long) */
 #define PS_WIDTH	128			/* Plane Width  (long) */
 #define P_WIDTH		256			/* Plane Width  (Byte) */
 
 #define SB_WIDTH	1280			/* Screen Width  (Bit) */
-#define	SB_HEIGHT	1024			/* Screen Hight  (Bit) */
+#define SB_HEIGHT	1024			/* Screen Hight  (Bit) */
 #define SL_WIDTH	40			/* Screen Width (Long) */
 #define S_WIDTH		160			/* Screen Width (Byte) */
 
@@ -120,8 +120,8 @@ union bmd_rfcnt {
 void	bmd_draw_char(char *, char *, int, int, int);
 void	bmd_reverse_char(char *, char *, int, int);
 void	bmd_erase_char(char *, char *, int, int);
-void	bmd_erase_screen(volatile u_long *);
-void	bmd_scroll_screen(volatile u_long *, volatile u_long *,
+void	bmd_erase_screen(volatile uint32_t *);
+void	bmd_scroll_screen(volatile uint32_t *, volatile uint32_t *,
 	    int, int, int, int);
 
 
@@ -149,9 +149,9 @@ struct bmd_softc {
 	void  (*bc_escape)(int);
 };
 
-#define	STAT_NORMAL	0x0000
-#define	STAT_ESCAPE	0x0001
-#define	STAT_INSERT	0x0100
+#define STAT_NORMAL	0x0000
+#define STAT_ESCAPE	0x0001
+#define STAT_INSERT	0x0100
 
 struct	bmd_softc bmd_softc;
 struct	bmd_linec bmd_linec[52];
@@ -221,11 +221,11 @@ bmd_escape_0(int c)
 		break;
 
 	default:
-/*
+#if 0
 		*bp->bc_esc++ = c;
 		bp->bc_escape = bmd_escape_1;
 		return;
- */
+#endif
 		break;
 	}
 
@@ -290,10 +290,10 @@ bmdinit(void)
 	 *  adjust plane position
 	 */
 
-	bp->bc_raddr = (char *) 0xB10C0008;		/* plane-0 hardware address */
-	bp->bc_waddr = (char *) 0xB1080008;		/* common bitmap hardware address */
-	rfcnt.p.rfc_hcnt = 7;				/* shift left   16 dot */
-	rfcnt.p.rfc_vcnt = -27;				/* shift down    1 dot */
+	bp->bc_raddr = (char *) 0xB10C0008;	/* plane-0 hardware address */
+	bp->bc_waddr = (char *) 0xB1080008; /* common bitmap hardware address */
+	rfcnt.p.rfc_hcnt = 7;			/* shift left   16 dot */
+	rfcnt.p.rfc_vcnt = -27;			/* shift down    1 dot */
 	*bmd_rfcnt = rfcnt.u;
 
 	bp->bc_stat  = STAT_NORMAL;
@@ -321,7 +321,7 @@ bmdinit(void)
 	bp->bc_escape = bmd_escape;
 
 	*bmd_bmsel = 0xff;				/* all planes */
-	bmd_erase_screen((u_long *) bp->bc_waddr);	/* clear screen */
+	bmd_erase_screen((uint32_t *)bp->bc_waddr);	/* clear screen */
 	*bmd_bmsel = 0x01;				/* 1 plane */
 
 							/* turn on  cursole */
@@ -372,8 +372,8 @@ bmdputc(int c)
 			bq->bl_col = bq->bl_end = bp->bc_xmin;
 			bp->bc_row++;
 			if (bp->bc_row >= bp->bc_ymax) {
-				bmd_scroll_screen((u_long *) bp->bc_raddr,
-						  (u_long *) bp->bc_waddr,
+				bmd_scroll_screen((uint32_t *)bp->bc_raddr,
+						  (uint32_t *)bp->bc_waddr,
 						  bp->bc_xmin, bp->bc_xmax,
 						  bp->bc_ymin, bp->bc_ymax);
 
@@ -399,8 +399,8 @@ bmdputc(int c)
 		case 0x0A:				/* NL */
 			bp->bc_row++;
 			if (bp->bc_row >= bp->bc_ymax) {
-				bmd_scroll_screen((u_long *) bp->bc_raddr,
-						  (u_long *) bp->bc_waddr,
+				bmd_scroll_screen((uint32_t *)bp->bc_raddr,
+						  (uint32_t *)bp->bc_waddr,
 						  bp->bc_xmin, bp->bc_xmax,
 						  bp->bc_ymin, bp->bc_ymax);
 
@@ -446,7 +446,7 @@ bmdclear(void)
 	struct bmd_softc *bp = &bmd_softc;
 	struct bmd_linec *bq = bp->bc_bl;
 
-	bmd_erase_screen((u_long *) bp->bc_waddr);	/* clear screen */
+	bmd_erase_screen((uint32_t *)bp->bc_waddr);	/* clear screen */
 
 	bq->bl_col = bq->bl_end = bp->bc_xmin;
 	bp->bc_row = bp->bc_ymin;
@@ -464,8 +464,8 @@ bmdclear(void)
 void
 bmd_draw_char(char *raddr, char *waddr, int col, int row, int c)
 {
-	volatile u_short  *p,  *q, *fp;
-	volatile u_long  *lp, *lq;
+	volatile uint16_t *p, *q, *fp;
+	volatile uint32_t *lp, *lq;
 	int i;
 
 	fp = &bmdfont[c][0];
@@ -473,8 +473,10 @@ bmd_draw_char(char *raddr, char *waddr, int col, int row, int c)
 	switch (col % 4) {
 
 	case 0:
-		p = (u_short *) ( raddr + (( row * FB_HEIGHT ) << 8 ) + (( col / 4 ) * 6 ));
-		q = (u_short *) ( waddr + (( row * FB_HEIGHT ) << 8 ) + (( col / 4 ) * 6 ));
+		p = (uint16_t *)(raddr + ((row * FB_HEIGHT) << 8)
+		    + ((col / 4) * 6));
+		q = (uint16_t *)(waddr + ((row * FB_HEIGHT) << 8)
+		    + ((col / 4) * 6));
 		for (i = 0; i < FB_HEIGHT; i++) {
 			*q = (*p & 0x000F) | (*fp & 0xFFF0);
 			p += 128;
@@ -484,10 +486,13 @@ bmd_draw_char(char *raddr, char *waddr, int col, int row, int c)
 		break;
 
 	case 1:
-		lp = (u_long *) ( raddr + (( row * FB_HEIGHT ) << 8 ) + (( col / 4 ) * 6 ));
-		lq = (u_long *) ( waddr + (( row * FB_HEIGHT ) << 8 ) + (( col / 4 ) * 6 ));
+		lp = (uint32_t *)(raddr + ((row * FB_HEIGHT) << 8)
+		    + ((col / 4) * 6));
+		lq = (uint32_t *)(waddr + ((row * FB_HEIGHT) << 8)
+		    + ((col / 4) * 6));
 		for (i = 0; i < FB_HEIGHT; i++) {
-			*lq = (*lp & 0xFFF000FF) | ((u_long)(*fp & 0xFFF0) << 4);
+			*lq = (*lp & 0xFFF000FF) |
+			    ((uint32_t)(*fp & 0xFFF0) << 4);
 			lp += 64;
 			lq += 64;
 			fp++;
@@ -495,10 +500,13 @@ bmd_draw_char(char *raddr, char *waddr, int col, int row, int c)
 		break;
 
 	case 2:
-		lp = (u_long *) ( raddr + (( row * FB_HEIGHT ) << 8 ) + (( col / 4 ) * 6 ) + 2 );
-		lq = (u_long *) ( waddr + (( row * FB_HEIGHT ) << 8 ) + (( col / 4 ) * 6 ) + 2 );
+		lp = (uint32_t *)(raddr + ((row * FB_HEIGHT) << 8)
+		    + ((col / 4) * 6) + 2);
+		lq = (uint32_t *)(waddr + ((row * FB_HEIGHT) << 8)
+		    + ((col / 4) * 6) + 2);
 		for (i = 0; i < FB_HEIGHT; i++) {
-			*lq = (*lp & 0xFF000FFF) | ((u_long)(*fp & 0xFFF0) << 8);
+			*lq = (*lp & 0xFF000FFF) |
+			    ((uint32_t)(*fp & 0xFFF0) << 8);
 			lp += 64;
 			lq += 64;
 			fp++;
@@ -506,8 +514,10 @@ bmd_draw_char(char *raddr, char *waddr, int col, int row, int c)
 		break;
 
 	case 3:
-		p = (u_short *) ( raddr + (( row * FB_HEIGHT ) << 8 ) + (( col / 4 ) * 6 ) + 4 );
-		q = (u_short *) ( waddr + (( row * FB_HEIGHT ) << 8 ) + (( col / 4 ) * 6 ) + 4 );
+		p = (uint16_t *)(raddr + ((row * FB_HEIGHT) << 8)
+		    + ((col / 4) * 6) + 4);
+		q = (uint16_t *)(waddr + ((row * FB_HEIGHT) << 8)
+		    + ((col / 4) * 6) + 4);
 		for (i = 0; i < FB_HEIGHT; i++) {
 			*q = (*p & 0xF000) | ((*fp & 0xFFF0) >> 4);
 			p += 128;
@@ -524,15 +534,17 @@ bmd_draw_char(char *raddr, char *waddr, int col, int row, int c)
 void
 bmd_reverse_char(char *raddr, char *waddr, int col, int row)
 {
-	volatile u_short  *p,  *q;
-	volatile u_long  *lp, *lq;
+	volatile uint16_t *p, *q;
+	volatile uint32_t *lp, *lq;
 	int i;
 
-	switch (col%4) {
+	switch (col % 4) {
 
 	case 0:
-		p = (u_short *) ( raddr + (( row * FB_HEIGHT ) << 8 ) + (( col / 4 ) * 6 ));
-		q = (u_short *) ( waddr + (( row * FB_HEIGHT ) << 8 ) + (( col / 4 ) * 6 ));
+		p = (uint16_t *)(raddr + ((row * FB_HEIGHT) << 8)
+		    + ((col / 4) * 6));
+		q = (uint16_t *)(waddr + ((row * FB_HEIGHT) << 8)
+		    + ((col / 4) * 6));
 		for (i = 0; i < FB_HEIGHT; i++) {
 			*q = (*p & 0x000F) | (~(*p) & 0xFFF0);
 			p += 128;
@@ -541,8 +553,10 @@ bmd_reverse_char(char *raddr, char *waddr, int col, int row)
 		break;
 
 	case 1:
-		lp = (u_long *) ( raddr + (( row * FB_HEIGHT ) << 8 ) + (( col / 4 ) * 6 ));
-		lq = (u_long *) ( waddr + (( row * FB_HEIGHT ) << 8 ) + (( col / 4 ) * 6 ));
+		lp = (uint32_t *)(raddr + ((row * FB_HEIGHT) << 8)
+		    + ((col / 4) * 6));
+		lq = (uint32_t *)(waddr + ((row * FB_HEIGHT) << 8)
+		    + ((col / 4) * 6));
 		for (i = 0; i < FB_HEIGHT; i++) {
 			*lq = (*lp & 0xFFF000FF) | (~(*lp) & 0x000FFF00);
 			lp += 64;
@@ -551,8 +565,10 @@ bmd_reverse_char(char *raddr, char *waddr, int col, int row)
 		break;
 
 	case 2:
-		lp = (u_long *) ( raddr + (( row * FB_HEIGHT ) << 8 ) + (( col / 4 ) * 6 ) + 2 );
-		lq = (u_long *) ( waddr + (( row * FB_HEIGHT ) << 8 ) + (( col / 4 ) * 6 ) + 2 );
+		lp = (uint32_t *)(raddr + ((row * FB_HEIGHT) << 8)
+		    + ((col / 4) * 6) + 2);
+		lq = (uint32_t *)(waddr + ((row * FB_HEIGHT) << 8)
+		    + ((col / 4) * 6) + 2);
 		for (i = 0; i < FB_HEIGHT; i++) {
 			*lq = (*lp & 0xFF000FFF) | (~(*lp) & 0x00FFF000);
 			lp += 64;
@@ -561,8 +577,10 @@ bmd_reverse_char(char *raddr, char *waddr, int col, int row)
 		break;
 
 	case 3:
-		p = (u_short *) ( raddr + (( row * FB_HEIGHT ) << 8 ) + (( col / 4 ) * 6 ) + 4 );
-		q = (u_short *) ( waddr + (( row * FB_HEIGHT ) << 8 ) + (( col / 4 ) * 6 ) + 4 );
+		p = (uint16_t *)(raddr + ((row * FB_HEIGHT) << 8)
+		    + ((col / 4) * 6) + 4);
+		q = (uint16_t *)(waddr + ((row * FB_HEIGHT) << 8)
+		    + ((col / 4) * 6) + 4);
 		for (i = 0; i < FB_HEIGHT; i++) {
 			*q = (*p & 0xF000) | (~(*p) & 0x0FFF);
 			p += 128;
@@ -578,9 +596,8 @@ bmd_reverse_char(char *raddr, char *waddr, int col, int row)
 void
 bmd_erase_char(char *raddr, char *waddr, int col, int row)
 {
-	bmd_draw_char(raddr, waddr, col, row, 0);
 
-	return;
+	bmd_draw_char(raddr, waddr, col, row, 0);
 }
 
 
@@ -589,7 +606,7 @@ bmd_erase_char(char *raddr, char *waddr, int col, int row)
  */
 
 void
-bmd_erase_screen(volatile u_long *lp)
+bmd_erase_screen(volatile uint32_t *lp)
 {
 	int i, j;
 
@@ -598,12 +615,10 @@ bmd_erase_screen(volatile u_long *lp)
 			*lp++ = 0;
 		SKIP_NEXT_LINE(lp);
 	}
-
-	return;
 }
 
 void
-bmd_scroll_screen(volatile u_long *lp, volatile u_long *lq,
+bmd_scroll_screen(volatile uint32_t *lp, volatile uint32_t *lq,
     int xmin, int xmax, int ymin, int ymax)
 {
 	int i, j;
@@ -625,5 +640,4 @@ bmd_scroll_screen(volatile u_long *lp, volatile u_long *lq,
 		}
 		lq += (PL_WIDTH - SL_WIDTH);
 	}
-
 }
