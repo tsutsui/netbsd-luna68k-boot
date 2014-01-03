@@ -1,4 +1,4 @@
-/*	$NetBSD: scsireg.h,v 1.2 2013/01/22 15:48:40 tsutsui Exp $	*/
+/*	$NetBSD: scsireg.h,v 1.3 2014/01/03 07:17:19 tsutsui Exp $	*/
 
 /*
  * Copyright (c) 1990, 1992, 1993

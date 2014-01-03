@@ -1,4 +1,4 @@
-/*	$NetBSD: scsi.c,v 1.3 2014/01/02 19:50:03 tsutsui Exp $	*/
+/*	$NetBSD: scsi.c,v 1.4 2014/01/03 07:17:19 tsutsui Exp $	*/
 
 /*
  * Copyright (c) 1992 OMRON Corporation.
