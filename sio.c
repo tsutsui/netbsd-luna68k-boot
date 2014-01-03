@@ -100,7 +100,9 @@ _siointr(void)
 void
 siointr(int unit)
 {
-/*	struct siodevice *sio = sio_addr[unit]; */
+#if 0
+	struct siodevice *sio = sio_addr[unit];
+#endif
 	int rr0 = sioreg(REG(unit, RR0), 0);
 	int rr1 = sioreg(REG(unit, RR1), 0);
 
@@ -108,8 +110,10 @@ siointr(int unit)
 		if (rr1 & RR1_FRAMING)
 			return;
 
-		if (rr1 & (RR1_PARITY | RR1_OVERRUN))
-		    sioreg(REG(unit, WR0), WR0_ERRRST); /* Channel-A Error Reset */
+		if (rr1 & (RR1_PARITY | RR1_OVERRUN)) {
+			/* Channel-A Error Reset */
+			sioreg(REG(unit, WR0), WR0_ERRRST);
+		}
 
 		if (unit == 1) {
 			int c = kbd_decode(sio_addr[unit]->sio_data);
@@ -131,8 +135,8 @@ siointr(int unit)
 void
 siocnprobe(struct consdev *cp)
 {
-	sio_addr[0] = (struct siodevice *) 0x51000000;
-	sio_addr[1] = (struct siodevice *) 0x51000004;
+	sio_addr[0] = (struct siodevice *)0x51000000;
+	sio_addr[1] = (struct siodevice *)0x51000004;
 
 	/* make sure hardware exists */
 	if (badaddr((short *)sio_addr[0])) {
@@ -166,7 +170,7 @@ siocngetc(dev_t dev)
 
 	POP_RBUF(unit, c);
 
-	return(c);
+	return c;
 }
 
 void
@@ -176,19 +180,21 @@ siocnputc(dev_t dev, int c)
 	int s;
 
 	if (sioconsole == -1) {
-		(void) sioinit();
+		(void)sioinit();
 		sioconsole = unit;
 	}
 
 	s = splsio();
 
 	/* wait for any pending transmission to finish */
-	while ((sioreg(REG(unit, RR0), 0) & RR0_TXEMPTY) == 0);
+	while ((sioreg(REG(unit, RR0), 0) & RR0_TXEMPTY) == 0)
+		continue;
 
 	sio_addr[unit]->sio_data = (c & 0xFF);
 
 	/* wait for any pending transmission to finish */
-	while ((sioreg(REG(unit, RR0), 0) & RR0_TXEMPTY) == 0);
+	while ((sioreg(REG(unit, RR0), 0) & RR0_TXEMPTY) == 0)
+		continue;
 
 	splx(s);
 }
@@ -205,26 +211,42 @@ sioinit(void)
 
 	s = splsio();
 
-	sioreg(REG(0, WR0), WR0_CHANRST);		/* Channel-A Reset */
+	/* Channel-A Reset */
+	sioreg(REG(0, WR0), WR0_CHANRST);
 
-	sioreg(WR2A, WR2_VEC86  | WR2_INTR_1);		/* Set CPU BUS Interface Mode */
-	sioreg(WR2B, 0);				/* Set Interrupt Vector */
+	/* Set CPU BUS Interface Mode */
+	sioreg(WR2A, WR2_VEC86  | WR2_INTR_1);
+	/* Set Interrupt Vector */
+	sioreg(WR2B, 0);
 
-	sioreg(REG(0, WR0), WR0_RSTINT);		/* Reset E/S Interrupt */
-	sioreg(REG(0, WR4), WR4_BAUD96 | WR4_STOP1 | WR4_NPARITY);	/* Tx/Rx */
-	sioreg(REG(0, WR3), WR3_RX8BIT | WR3_RXENBL);		/* Rx */
-	sioreg(REG(0, WR5), WR5_TX8BIT | WR5_TXENBL | WR5_DTR | WR5_RTS);		/* Tx */
-	sioreg(REG(0, WR0), WR0_RSTINT);		/* Reset E/S Interrupt */
-	sioreg(REG(0, WR1), WR1_RXALLS);		/* Interrupted All Char. */
+	/* Reset E/S Interrupt */
+	sioreg(REG(0, WR0), WR0_RSTINT);
+	/* Tx/Rx */
+	sioreg(REG(0, WR4), WR4_BAUD96 | WR4_STOP1 | WR4_NPARITY);
+	/* Rx */
+	sioreg(REG(0, WR3), WR3_RX8BIT | WR3_RXENBL);
+	/* Tx */
+	sioreg(REG(0, WR5), WR5_TX8BIT | WR5_TXENBL | WR5_DTR | WR5_RTS);
+	/* Reset E/S Interrupt */
+	sioreg(REG(0, WR0), WR0_RSTINT);
+	/* Interrupted All Char. */
+	sioreg(REG(0, WR1), WR1_RXALLS);
 
-	sioreg(REG(1, WR0), WR0_CHANRST);		/* Channel-A Reset */
+	/* Channel-A Reset */
+	sioreg(REG(1, WR0), WR0_CHANRST);
 
-	sioreg(REG(1, WR0), WR0_RSTINT);		/* Reset E/S Interrupt */
-	sioreg(REG(1, WR4), WR4_BAUD96 | WR4_STOP1 | WR4_NPARITY);	/* Tx/Rx */
-	sioreg(REG(1, WR3), WR3_RX8BIT | WR3_RXENBL);		/* Rx */
-	sioreg(REG(1, WR5), WR5_TX8BIT | WR5_TXENBL);		/* Tx */
-	sioreg(REG(1, WR0), WR0_RSTINT);		/* Reset E/S Interrupt */
-	sioreg(REG(1, WR1), WR1_RXALLS);		/* Interrupted All Char. */
+	/* Reset E/S Interrupt */
+	sioreg(REG(1, WR0), WR0_RSTINT);
+	/* Tx/Rx */
+	sioreg(REG(1, WR4), WR4_BAUD96 | WR4_STOP1 | WR4_NPARITY);
+	/* Rx */
+	sioreg(REG(1, WR3), WR3_RX8BIT | WR3_RXENBL);
+	/* Tx */
+	sioreg(REG(1, WR5), WR5_TX8BIT | WR5_TXENBL);
+	/* Reset E/S Interrupt */
+	sioreg(REG(1, WR0), WR0_RSTINT);
+	/* Interrupted All Char. */
+	sioreg(REG(1, WR1), WR1_RXALLS);
 
 	splx(s);
 }
@@ -238,12 +260,12 @@ sioreg(int reg, int val)
 
 	if (isStatusReg(reg)) {
 		if (REGNO(reg) != 0)
-		    sio_addr[chan]->sio_cmd = REGNO(reg);
-		return(sio_addr[chan]->sio_stat);
+			sio_addr[chan]->sio_cmd = REGNO(reg);
+		return sio_addr[chan]->sio_stat;
 	} else {
 		if (REGNO(reg) != 0)
-		    sio_addr[chan]->sio_cmd = REGNO(reg);
+			sio_addr[chan]->sio_cmd = REGNO(reg);
 		sio_addr[chan]->sio_cmd = val;
-		return(val);
+		return val;
 	}
 }
