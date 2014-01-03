@@ -1,4 +1,4 @@
-/*	$NetBSD: device.h,v 1.5 2013/01/14 12:28:11 tsutsui Exp $	*/
+/*	$NetBSD: device.h,v 1.6 2014/01/03 02:03:12 tsutsui Exp $	*/
 
 /*
  * Copyright (c) 1992 OMRON Corporation.

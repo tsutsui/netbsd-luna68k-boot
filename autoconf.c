@@ -1,4 +1,4 @@
-/*	$NetBSD: autoconf.c,v 1.7 2013/01/22 15:48:40 tsutsui Exp $	*/
+/*	$NetBSD: autoconf.c,v 1.8 2014/01/03 02:03:12 tsutsui Exp $	*/
 
 /*
  * Copyright (c) 1992 OMRON Corporation.
