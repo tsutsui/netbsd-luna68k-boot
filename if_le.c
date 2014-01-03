@@ -1,4 +1,4 @@
-/* $NetBSD: if_le.c,v 1.3 2013/01/22 15:48:40 tsutsui Exp $ */
+/* $NetBSD: if_le.c,v 1.4 2014/01/03 03:25:25 tsutsui Exp $ */
 
 /*
  * Copyright (c) 2013 Izumi Tsutsui.  All rights reserved.
