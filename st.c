@@ -153,7 +153,7 @@ stinit(void *arg)
 }
 
 static struct scsi_inquiry inqbuf;
-static struct scsi_fmt_cdb inq = {
+static struct scsi_generic_cdb inq = {
 	6,
 	{ CMD_INQUIRY, 0, 0, 0, sizeof(inqbuf), 0 }
 };
@@ -340,7 +340,7 @@ sense_key(int key)
 		return("Unknown Error");
 }
 
-static struct scsi_fmt_cdb st_cmd  = {
+static struct scsi_generic_cdb st_cmd  = {
 	6,
 	{ 0, 0, 0, 0, 0, 0 }
 };
@@ -352,7 +352,7 @@ stread(dev_t dev, char *buf, int size)
 {
 	int unit = stunit(dev);
 	struct st_softc *sc = &st_softc[unit];
-	struct scsi_fmt_cdb *cdb = &st_cmd;
+	struct scsi_generic_cdb *cdb = &st_cmd;
 	int nblk = size >> DEV_BSHIFT;
 	struct scsi_xsense *sp = (struct scsi_xsense *)sensebuf;
 	int ctlr, slave, stat;
@@ -394,7 +394,7 @@ stwrite(dev_t dev, char *buf, int size)
 {
 	int unit = stunit(dev);
 	struct st_softc *sc = &st_softc[unit];
-	struct scsi_fmt_cdb *cdb = &st_cmd;
+	struct scsi_generic_cdb *cdb = &st_cmd;
 	struct scsi_xsense *sp = (struct scsi_xsense *)sensebuf;
 	int nblk;
 	int ctlr, slave, stat;
@@ -441,7 +441,7 @@ st_rewind(dev_t dev)
 {
 	int unit = stunit(dev);
 	struct st_softc *sc = &st_softc[unit];
-	struct scsi_fmt_cdb *cdb = &st_cmd;
+	struct scsi_generic_cdb *cdb = &st_cmd;
 	struct scsi_xsense *sp = (struct scsi_xsense *)sensebuf;
 	int ctlr, slave, stat;
 	int retry = 5;
@@ -486,7 +486,7 @@ st_write_EOF(dev_t dev)
 {
 	int unit = stunit(dev);
 	struct st_softc *sc = &st_softc[unit];
-	struct scsi_fmt_cdb *cdb = &st_cmd;
+	struct scsi_generic_cdb *cdb = &st_cmd;
 	int ctlr, slave, stat;
 	int marks = 1;
 
@@ -517,7 +517,7 @@ st_skip(dev_t dev)
 {
 	int unit = stunit(dev);
 	struct st_softc *sc = &st_softc[unit];
-	struct scsi_fmt_cdb *cdb = &st_cmd;
+	struct scsi_generic_cdb *cdb = &st_cmd;
 	int nfmk = 1;
 	struct scsi_xsense *sp = (struct scsi_xsense *)sensebuf;
 	int ctlr, slave, stat;

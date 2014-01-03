@@ -453,7 +453,7 @@ scsi_request_sense(int ctlr, int slave, int unit, u_char *buf, unsigned int len)
 }
 
 int
-scsi_immed_command(int ctlr, int slave, int unit, struct scsi_fmt_cdb *cdb,
+scsi_immed_command(int ctlr, int slave, int unit, struct scsi_generic_cdb *cdb,
     u_char *buf, unsigned int len)
 {
 	int status;

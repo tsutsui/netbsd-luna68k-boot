@@ -94,7 +94,7 @@ readdisklabel(int ctlr, int id, struct disklabel *lp)
 	u_char *bp = lbl_buff;
 	struct disklabel *dlp;
 	char *msg = NULL;
-	static struct scsi_fmt_cdb cdb = {
+	static struct scsi_generic_cdb cdb = {
 		6,
 		{ CMD_READ, 0, 0, 0, 1, 0 }
 	};
