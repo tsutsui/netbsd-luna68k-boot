@@ -114,6 +114,61 @@ int boot_timeout = BOOT_TIMEOUT;
 
 static const char prompt[] = "boot> ";
 
+/*
+ * PROM monitor's boot device info
+ */
+
+/* LUNA-I monitor's bootinfo structure */
+#define	LUNA1_BOOTINFOADDR	0x000008c0
+struct luna1_bootinfo {
+	uint8_t	bi_xxx1[3];	/* 0x08c0 - 0x08c2 */
+	uint8_t	bi_device;	/* 0x08c3: boot device */
+#define	LUNA1_BTDEV_DK	0x00		/* Hard-Disk */
+#define	LUNA1_BTDEV_FB	0x01		/* Floppy-Disk */
+#define	LUNA1_BTDEV_SD	0x02		/* Streamer-Tape */
+#define	LUNA1_BTDEV_P0	0x03		/* RS232c */
+#define	LUNA1_BTDEV_ET	0x04		/* Ether-net */
+
+	struct {
+		uint8_t	bd_xxx1;	/*  0: ??? */
+		uint8_t	bd_boot;	/*  1: 1 == booted */
+		char	bd_name[2];	/*  2: device name (dk, fb, sd ... ) */
+		uint8_t	bd_unit;	/*  4: unit number (not ID) */
+		uint8_t	bd_xxx2;	/*  5: ??? */
+		uint8_t	bd_xxx3;	/*  6: ??? */
+		uint8_t	bd_part;	/*  7: dk partition / st record # */
+		uint8_t	bd_xxx4[4];	/*  8: ??? */
+		uint8_t	bd_xxx5[4];	/* 12: ??? */
+	} bi_devinfo[5];
+} __packed;
+
+/* LUNA-II monitor's bootinfo structure */
+#define	LUNA2_BOOTINFOADDR	0x00001d80	/* per inspection of RAM dump */
+struct luna2_bootinfo {
+	uint8_t	bi_xxx1[13];	/* 0x1d80 - 0x1d8c */
+	uint8_t	bi_device;	/* 0x1d8d: boot device */
+#define	LUNA2_BTDEV_DK	0x00		/* Hard-Disk */
+#define	LUNA2_BTDEV_FT	0x01		/* Floppy-Disk */
+#define	LUNA2_BTDEV_SD	0x02		/* Streamer-Tape */
+#define	LUNA2_BTDEV_P0	0x03		/* RS232c */
+
+	struct {
+		uint8_t	bd_xxx1;	/*  0: ??? */
+		uint8_t	bd_boot;	/*  1: 1 == booted */
+		char	bd_name[4];	/*  2: device name (dk, ft, sd ... ) */
+		uint8_t	bd_xxx2;	/*  6: ??? */
+		uint8_t	bd_ctlr;	/*  7: SCSI controller number */
+		uint8_t	bd_unit;	/*  8: SCSI ID number */
+		uint8_t	bd_xxx3;	/*  9: device number index? */
+		uint8_t	bd_xxx4;	/* 10: ??? */
+		uint8_t	bd_part;	/* 11: dk partition / st record # */
+		uint8_t	bd_xxx5[4];	/* 12: ??? */
+		uint8_t	bd_xxx6[4];	/* 16: ??? */
+	} bi_devinfo[4];
+} __packed;
+
+#define BTINFO_DEBUG
+
 void
 main(void)
 {
@@ -187,6 +242,71 @@ main(void)
 
 	unit = 0;	/* XXX should parse monitor's Boot-file constant */
 	part = 0;
+
+	if (machtype == LUNA_I) {
+		struct luna1_bootinfo *bi1 = (void *)LUNA1_BOOTINFOADDR;
+		int dev = bi1->bi_device;
+
+		switch (dev) {
+		case LUNA1_BTDEV_DK:
+			/* XXX: should check hp_dinfo in ioconf.c */
+			/* note: bd_unit is not SCSI ID */
+			unit = bi1->bi_devinfo[dev].bd_unit;
+			break;
+		case LUNA1_BTDEV_ET:
+			/* XXX: should set netboot here? */
+			unit = 0;
+			break;
+		default:
+			/* not supported */
+			break;
+		}
+#ifdef BTINFO_DEBUG
+		printf("bi1->bi_device = 0x%02x\n", bi1->bi_device);
+		printf("bi1->bi_devinfo[dev].bd_boot = 0x%02x\n",
+		    bi1->bi_devinfo[dev].bd_boot);
+		printf("bi1->bi_devinfo[dev].bd_name = %c%c\n",
+		    bi1->bi_devinfo[dev].bd_name[0],
+		    bi1->bi_devinfo[dev].bd_name[1]);
+		printf("bi1->bi_devinfo[dev].bd_unit = 0x%02x\n",
+		    bi1->bi_devinfo[dev].bd_unit);
+		printf("bi1->bi_devinfo[dev].bd_part = 0x%02x\n",
+		    bi1->bi_devinfo[dev].bd_part);
+#endif
+	} else {
+		struct luna2_bootinfo *bi2 = (void *)LUNA2_BOOTINFOADDR;
+		int dev = bi2->bi_device;
+		int id;
+
+		switch (dev) {
+		case LUNA2_BTDEV_DK:
+			id = bi2->bi_devinfo[dev].bd_unit;
+			/* XXX: should check hp_dinfo in ioconf.c */
+			unit = 6 - id;
+			if (bi2->bi_devinfo[dev].bd_ctlr == 1) {
+				/* XXX: should check hp_dinfo in ioconf.c */
+				unit += 2;
+			}
+			break;
+		default:
+			/* not supported */
+			break;
+		}
+#ifdef BTINFO_DEBUG
+		printf("bi2->bi_device = 0x%02x\n", bi2->bi_device);
+		printf("bi2->bi_devinfo[dev].bd_boot = 0x%02x\n",
+		    bi2->bi_devinfo[dev].bd_boot);
+		printf("bi2->bi_devinfo[dev].bd_name = %s\n",
+		    bi2->bi_devinfo[dev].bd_name);
+		printf("bi2->bi_devinfo[dev].bd_ctlr = 0x%02x\n",
+		    bi2->bi_devinfo[dev].bd_ctlr);
+		printf("bi2->bi_devinfo[dev].bd_unit = 0x%02x\n",
+		    bi2->bi_devinfo[dev].bd_unit);
+		printf("bi2->bi_devinfo[dev].bd_part = 0x%02x\n",
+		    bi2->bi_devinfo[dev].bd_part);
+#endif
+	}
+
 	snprintf(default_file, sizeof(default_file),
 	    "%s(%d,%d)%s", netboot ? "le" : "sd", unit, part, "netbsd");
 
