@@ -74,6 +74,8 @@
 #include <luna68k/stand/boot/samachdep.h>
 #include <machine/disklabel.h>
 
+#define MAXDEVNAME	16
+
 static int make_device(const char *, int *, int *, int *, char **);
 
 int

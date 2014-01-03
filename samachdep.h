@@ -45,8 +45,6 @@
 #define MHZ_33		4
 #define MHZ_50		6
 
-#define MAXDEVNAME	16
-
 struct consdev;
 struct frame;
 typedef struct label_t {
