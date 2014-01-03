@@ -98,15 +98,6 @@ struct hp_device {
 	int		hp_ipl;
 };
 
-struct	devqueue {
-	struct	devqueue *dq_forw;
-	struct	devqueue *dq_back;
-	int	dq_ctlr;
-	int	dq_unit;
-	int	dq_slave;
-	struct	driver *dq_driver;
-};
-
 struct hp_hw {
 	uint8_t	*hw_addr;	/* physical address of registers */
 	short	hw_type;	/* type (defined below) */
