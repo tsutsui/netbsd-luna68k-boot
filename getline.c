@@ -1,4 +1,4 @@
-/*	$NetBSD: getline.c,v 1.2 2013/01/20 07:32:45 tsutsui Exp $	*/
+/*	$NetBSD: getline.c,v 1.3 2014/01/03 06:37:13 tsutsui Exp $	*/
 
 /*
  * Copyright (c) 1992 OMRON Corporation.
