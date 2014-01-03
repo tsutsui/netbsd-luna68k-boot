@@ -87,12 +87,6 @@ struct rcvbuf	rcvbuf[NSIO];
 
 int	sioconsole = -1;
 struct	siodevice *sio_addr[2];
-int	cur_unit;
-
-
-#define	siounit(x)	( x & 0xffff )
-#define isprint(c)      ((c >= 0x20) && (c < 0x7F) ? 1 : 0)
-
 
 void
 _siointr(void)
@@ -149,14 +143,14 @@ siocnprobe(struct consdev *cp)
 	/* locate the major number */
 
 	/* initialize required fields */
-	cp->cn_dev = cur_unit = 0;
+	cp->cn_dev = 0;
 	cp->cn_pri = CN_NORMAL;
 }
 
 void
 siocninit(struct consdev *cp)
 {
-	int unit = siounit(cp->cn_dev);
+	int unit = cp->cn_dev;
 
 	sioinit();
 	sioconsole = unit;
@@ -165,7 +159,7 @@ siocninit(struct consdev *cp)
 int
 siocngetc(dev_t dev)
 {
-	int c, unit = siounit(dev);
+	int c, unit = dev;
 
 	if (RBUF_EMPTY(unit))
 		return 0;
@@ -178,7 +172,7 @@ siocngetc(dev_t dev)
 void
 siocnputc(dev_t dev, int c)
 {
-	int unit = siounit(dev);
+	int unit = dev;
 	int s;
 
 	if (sioconsole == -1) {
