@@ -87,14 +87,14 @@ struct hp_ctlr hp_cinit[] = {
 };
 
 struct hp_device hp_dinit[] = {
-/*driver,	cdriver,	unit,	ctlr,	slave,	addr,	dk,	flags*/
-{ &sddriver,	&scdriver,	0,	0,	6,	NULL,	1,	0x0 },
-{ &sddriver,	&scdriver,	1,	0,	5,	NULL,	1,	0x0 },
-{ &sddriver,	&scdriver,	2,	1,	6,	NULL,	1,	0x0 },
-{ &sddriver,	&scdriver,	3,	1,	5,	NULL,	1,	0x0 },
-{ &ledriver,	NULL,		0,	0,	0,	NULL,	0,	0x0 },
+/*driver,	cdriver,	unit,	ctlr,	slave */
+{ &sddriver,	&scdriver,	0,	0,	6 },
+{ &sddriver,	&scdriver,	1,	0,	5 },
+{ &sddriver,	&scdriver,	2,	1,	6 },
+{ &sddriver,	&scdriver,	3,	1,	5 },
+{ &ledriver,	NULL,		0,	0,	0 },
 #ifdef notyet
-{ &stdriver,	&scdriver,	0,	0,	4,	NULL,	0,	0x0 },
+{ &stdriver,	&scdriver,	0,	0,	4 },
 #endif
 {0}
 };

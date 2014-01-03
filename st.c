@@ -134,19 +134,19 @@ stinit(void *arg)
 	struct st_softc *sc;
 	int unit;
 
-	unit = hd->hp_unit;
+	unit = hd->hpd_unit;
 	if (unit < 0 || unit >= NST)
 		return 0;
 
 	sc = &st_softc[unit];
 	sc->sc_hd = hd;
-	sc->sc_punit = stpunit(hd->hp_flags);
+	sc->sc_punit = 0;	/* XXX no LUN support yet */
 	sc->sc_type = stident(sc, hd);
 	if (sc->sc_type < 0)
 		return(0);
-	sc->sc_dq.dq_ctlr = hd->hp_ctlr;
+	sc->sc_dq.dq_ctlr = hd->hpd_ctlr;
 	sc->sc_dq.dq_unit = unit;
-	sc->sc_dq.dq_slave = hd->hp_slave;
+	sc->sc_dq.dq_slave = hd->hpd_slave;
 	sc->sc_dq.dq_driver = &stdriver;
 	sc->sc_flags = STF_ALIVE;
 	return(1);
@@ -167,8 +167,8 @@ stident(struct st_softc *sc, struct hp_device *hd)
 	int i, stat;
 	int tries = 10;
 
-	ctlr = hd->hp_ctlr;
-	slave = hd->hp_slave;
+	ctlr = hd->hpd_ctlr;
+	slave = hd->hpd_slave;
 	unit = sc->sc_punit;
 
 	/*
@@ -204,7 +204,7 @@ stident(struct st_softc *sc, struct hp_device *hd)
 		if (idstr[i] != ' ')
 			break;
 	idstr[i+1] = 0;
-	printf("st%d: %s %s rev %s\n", hd->hp_unit, idstr, &idstr[8],
+	printf("st%d: %s %s rev %s\n", hd->hpd_unit, idstr, &idstr[8],
 	       &idstr[24]);
 
 	return(inqbuf.type);
@@ -283,7 +283,7 @@ sterror(int unit, struct st_softc *sc, struct hp_device *hp, int stat)
 	if (stat & STS_CHECKCOND) {
 		struct scsi_xsense *sp;
 
-		scsi_request_sense(hp->hp_ctlr, hp->hp_slave,
+		scsi_request_sense(hp->hpd_ctlr, hp->hpd_slave,
 				   sc->sc_punit, stsense[unit].sense,
 				   sizeof(stsense[unit].sense));
 		sp = (struct scsi_xsense *)stsense[unit].sense;
@@ -357,8 +357,8 @@ stread(dev_t dev, char *buf, int size)
 	struct scsi_xsense *sp = (struct scsi_xsense *)sensebuf;
 	int ctlr, slave, stat;
 
-	ctlr  = sc->sc_hd->hp_ctlr;
-	slave = sc->sc_hd->hp_slave;
+	ctlr  = sc->sc_hd->hpd_ctlr;
+	slave = sc->sc_hd->hpd_slave;
 	
 	cdb->cdb[0] = CMD_READ;
 	cdb->cdb[1] = 1;		/* unknown setup */
@@ -404,8 +404,8 @@ stwrite(dev_t dev, char *buf, int size)
 		nblk++;
 	size = nblk << DEV_BSHIFT;
 
-	ctlr  = sc->sc_hd->hp_ctlr;
-	slave = sc->sc_hd->hp_slave;
+	ctlr  = sc->sc_hd->hpd_ctlr;
+	slave = sc->sc_hd->hpd_slave;
 
 	sc->sc_flags |= STF_WRTTN;
 	
@@ -446,8 +446,8 @@ st_rewind(dev_t dev)
 	int ctlr, slave, stat;
 	int retry = 5;
 
-	ctlr  = sc->sc_hd->hp_ctlr;
-	slave = sc->sc_hd->hp_slave;
+	ctlr  = sc->sc_hd->hpd_ctlr;
+	slave = sc->sc_hd->hpd_slave;
 
 	cdb->cdb[0] = CMD_REWIND;
 	cdb->cdb[1] = 1;	/* command finished soon */
@@ -490,8 +490,8 @@ st_write_EOF(dev_t dev)
 	int ctlr, slave, stat;
 	int marks = 1;
 
-	ctlr  = sc->sc_hd->hp_ctlr;
-	slave = sc->sc_hd->hp_slave;
+	ctlr  = sc->sc_hd->hpd_ctlr;
+	slave = sc->sc_hd->hpd_slave;
 	
 	cdb->cdb[0] = CMD_WRITE_FILEMARK;
 	cdb->cdb[1] = 1;	/* command finished soon */
@@ -522,8 +522,8 @@ st_skip(dev_t dev)
 	struct scsi_xsense *sp = (struct scsi_xsense *)sensebuf;
 	int ctlr, slave, stat;
 
-	ctlr  = sc->sc_hd->hp_ctlr;
-	slave = sc->sc_hd->hp_slave;
+	ctlr  = sc->sc_hd->hpd_ctlr;
+	slave = sc->sc_hd->hpd_slave;
 	
 	cdb->cdb[0] = CMD_SPACE;
 	cdb->cdb[1] = 1;		/* it mean skip until EOF */
