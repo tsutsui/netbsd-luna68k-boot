@@ -470,9 +470,6 @@ same_hw_device(struct hp_hw *hw, struct hp_device *hd)
 	case SCSI:
 		found = dr_type(hd->hp_driver, "scsi");
 		break;
-	case VME:
-	case MISC:
-		break;
 	}
 	return(found);
 }
