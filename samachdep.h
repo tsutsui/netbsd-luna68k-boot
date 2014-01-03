@@ -103,7 +103,7 @@ int fsdump(int, char **);
 int fsrestore(int, char **);
 
 /* getline.c */
-int getline(char *, char *);
+int getline(const char *, char *);
 
 /* if_le.c */
 int leinit(void *);

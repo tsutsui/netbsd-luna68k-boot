@@ -79,7 +79,7 @@
 #include <luna68k/stand/boot/samachdep.h>
 
 int
-getline(char *prompt, char *buff)
+getline(const char *prompt, char *buff)
 {
 	int c;
 	char *p = buff;

@@ -112,7 +112,7 @@ char *argv[MAXARGS];
 #define BOOT_TIMEOUT 10
 int boot_timeout = BOOT_TIMEOUT;
 
-char  prompt[16] = "boot> ";
+static const char prompt[] = "boot> ";
 
 void
 main(void)
