@@ -121,13 +121,14 @@ static const char prompt[] = "boot> ";
 /* LUNA-I monitor's bootinfo structure */
 #define	LUNA1_BOOTINFOADDR	0x000008c0
 struct luna1_bootinfo {
-	uint8_t	bi_xxx1[3];	/* 0x08c0 - 0x08c2 */
+	uint8_t	bi_xxx1[3];	/* 0x08c0: ??? */
 	uint8_t	bi_device;	/* 0x08c3: boot device */
-#define	LUNA1_BTDEV_DK	0x00		/* Hard-Disk */
-#define	LUNA1_BTDEV_FB	0x01		/* Floppy-Disk */
-#define	LUNA1_BTDEV_SD	0x02		/* Streamer-Tape */
-#define	LUNA1_BTDEV_P0	0x03		/* RS232c */
-#define	LUNA1_BTDEV_ET	0x04		/* Ether-net */
+#define	LUNA1_BTDEV_DK	0		/* Hard-Disk */
+#define	LUNA1_BTDEV_FB	1		/* Floppy-Disk */
+#define	LUNA1_BTDEV_SD	2		/* Streamer-Tape */
+#define	LUNA1_BTDEV_P0	3		/* RS232c */
+#define	LUNA1_BTDEV_ET	4		/* Ether-net */
+#define	LUNA1_NBTDEV	5
 
 	struct {
 		uint8_t	bd_xxx1;	/*  0: ??? */
@@ -139,18 +140,19 @@ struct luna1_bootinfo {
 		uint8_t	bd_part;	/*  7: dk partition / st record # */
 		uint8_t	bd_xxx4[4];	/*  8: ??? */
 		uint8_t	bd_xxx5[4];	/* 12: ??? */
-	} bi_devinfo[5];
+	} bi_devinfo[LUNA1_NBTDEV];
 } __packed;
 
 /* LUNA-II monitor's bootinfo structure */
-#define	LUNA2_BOOTINFOADDR	0x00001d80	/* per inspection of RAM dump */
+#define	LUNA2_BOOTINFOADDR	0x00001d80
 struct luna2_bootinfo {
-	uint8_t	bi_xxx1[13];	/* 0x1d80 - 0x1d8c */
+	uint8_t	bi_xxx1[13];	/* 0x1d80: ??? */
 	uint8_t	bi_device;	/* 0x1d8d: boot device */
-#define	LUNA2_BTDEV_DK	0x00		/* Hard-Disk */
-#define	LUNA2_BTDEV_FT	0x01		/* Floppy-Disk */
-#define	LUNA2_BTDEV_SD	0x02		/* Streamer-Tape */
-#define	LUNA2_BTDEV_P0	0x03		/* RS232c */
+#define	LUNA2_BTDEV_DK	0		/* Hard-Disk */
+#define	LUNA2_BTDEV_FT	1		/* Floppy-Disk */
+#define	LUNA2_BTDEV_SD	2		/* Streamer-Tape */
+#define	LUNA2_BTDEV_P0	3		/* RS232c */
+#define	LUNA2_NBTDEV	4
 
 	struct {
 		uint8_t	bd_xxx1;	/*  0: ??? */
@@ -164,7 +166,7 @@ struct luna2_bootinfo {
 		uint8_t	bd_part;	/* 11: dk partition / st record # */
 		uint8_t	bd_xxx5[4];	/* 12: ??? */
 		uint8_t	bd_xxx6[4];	/* 16: ??? */
-	} bi_devinfo[4];
+	} bi_devinfo[LUNA2_NBTDEV];
 } __packed;
 
 #define BTINFO_DEBUG
@@ -174,9 +176,7 @@ main(void)
 {
 	int i, status = 0;
 	const char *machstr;
-	const char *cp;
-	char bootarg[64];
-	bool netboot = false;
+	const char *bootdev;
 	int unit, part;
 
 	/*
@@ -187,25 +187,11 @@ main(void)
 		machstr  = "LUNA-I";
 		cpuspeed = MHZ_25;
 		hz = 60;
-		memcpy(bootarg, (char *)*RVPtr->vec53, sizeof(bootarg));
-
-		/* check netboot */
-		for (i = 0, cp = bootarg; i < sizeof(bootarg); i++, cp++) {
-			if (*cp == '\0')
-				break;
-			if (*cp == 'E' && memcmp("ENADDR=", cp, 7) == 0) {
-				netboot = true;
-				break;
-			}
-		}
 	} else {
 		machtype = LUNA_II;
 		machstr  = "LUNA-II";
 		cpuspeed = MHZ_25 * 2;	/* XXX */
 		hz = 100;
-		memcpy(bootarg, (char *)*RVPtr->vec02, sizeof(bootarg));
-
-		/* LUNA-II's boot monitor doesn't support netboot */
 	}
 
 	nplane   = get_plane_numbers();
@@ -240,11 +226,13 @@ main(void)
 	configure();
 	printf("\n");
 
-	unit = 0;	/* XXX should parse monitor's Boot-file constant */
+	/* use sd(0,0) for the default boot device */
+	bootdev = "sd";
+	unit = 0;
 	part = 0;
 
 	if (machtype == LUNA_I) {
-		struct luna1_bootinfo *bi1 = (void *)LUNA1_BOOTINFOADDR;
+		const struct luna1_bootinfo *bi1 = (void *)LUNA1_BOOTINFOADDR;
 		int dev = bi1->bi_device;
 
 		switch (dev) {
@@ -254,7 +242,7 @@ main(void)
 			unit = bi1->bi_devinfo[dev].bd_unit;
 			break;
 		case LUNA1_BTDEV_ET:
-			/* XXX: should set netboot here? */
+			bootdev = "le";
 			unit = 0;
 			break;
 		default:
@@ -274,16 +262,17 @@ main(void)
 		    bi1->bi_devinfo[dev].bd_part);
 #endif
 	} else {
-		struct luna2_bootinfo *bi2 = (void *)LUNA2_BOOTINFOADDR;
+		const struct luna2_bootinfo *bi2 = (void *)LUNA2_BOOTINFOADDR;
 		int dev = bi2->bi_device;
-		int id;
+		int ctlr, id;
 
 		switch (dev) {
 		case LUNA2_BTDEV_DK:
+			ctlr = bi2->bi_devinfo[dev].bd_ctlr;
 			id = bi2->bi_devinfo[dev].bd_unit;
 			/* XXX: should check hp_dinfo in ioconf.c */
 			unit = 6 - id;
-			if (bi2->bi_devinfo[dev].bd_ctlr == 1) {
+			if (ctlr == 1) {
 				/* XXX: should check hp_dinfo in ioconf.c */
 				unit += 2;
 			}
@@ -308,7 +297,7 @@ main(void)
 	}
 
 	snprintf(default_file, sizeof(default_file),
-	    "%s(%d,%d)%s", netboot ? "le" : "sd", unit, part, "netbsd");
+	    "%s(%d,%d)%s", bootdev, unit, part, "netbsd");
 
 	howto = reorder_dipsw(dipsw2);
 
