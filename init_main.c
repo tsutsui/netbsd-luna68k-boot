@@ -171,7 +171,7 @@ struct luna2_bootinfo {
 	} bi_devinfo[LUNA2_NBTDEV];
 } __packed;
 
-#define BTINFO_DEBUG
+/* #define BTINFO_DEBUG */
 
 void
 main(void)
