@@ -119,6 +119,7 @@ static const char prompt[] = "boot> ";
  */
 
 /* LUNA-I monitor's bootinfo structure */
+/* This bootinfo data address is investigated on ROM Ver4.22 and Ver4.25 */
 #define	LUNA1_BOOTINFOADDR	0x000008c0
 struct luna1_bootinfo {
 	uint8_t	bi_xxx1[3];	/* 0x08c0: ??? */
@@ -144,6 +145,7 @@ struct luna1_bootinfo {
 } __packed;
 
 /* LUNA-II monitor's bootinfo structure */
+/* This bootinfo data address is investigated on ROM Version 1.11 */
 #define	LUNA2_BOOTINFOADDR	0x00001d80
 struct luna2_bootinfo {
 	uint8_t	bi_xxx1[13];	/* 0x1d80: ??? */
