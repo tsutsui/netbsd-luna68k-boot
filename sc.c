@@ -88,14 +88,14 @@
 #define SCSI_ID		7
 
 static int scinit(void *);
-static void screset(int);
+static void screset(struct scsi_softc *);
 static int issue_select(struct scsidevice *, u_char);
 static void ixfer_start(struct scsidevice *, int, u_char, int);
 static void ixfer_out(struct scsidevice *, int, u_char *);
 static void ixfer_in(struct scsidevice *, int, u_char *);
 static int scrun(int, int, u_char *, int, u_char *, int, volatile int *);
 static int scfinish(int);
-static void scabort(struct scsi_softc *, struct scsidevice *);
+static void scabort(struct scsi_softc *);
 
 struct	driver scdriver = {
 	scinit, "sc", scintr,
@@ -111,17 +111,18 @@ int
 scinit(void *arg)
 {
 	struct hp_ctlr *hc = arg;
+	int ctlr = hc->hp_unit;
+	void *addr = hc->hp_addr;
 	struct scsi_softc *hs;
-	int unit;
 
-	unit = hc->hp_unit;
-	if (unit < 0 || unit >= NSC)
+	if (ctlr < 0 || ctlr >= NSC)
 		return 0;
 
-	hs = &scsi_softc[unit];
-
 	hc->hp_ipl    = SCSI_IPL;
-	hs->sc_hc     = hc;
+
+	hs = &scsi_softc[ctlr];
+	hs->sc_ctlr   = ctlr;
+	hs->sc_spc    = addr;
 
 	hs->sc_flags  = 0;
 	hs->sc_phase  = BUS_FREE_PHASE;
@@ -136,17 +137,16 @@ scinit(void *arg)
 	hs->sc_stat   = 0;
 	hs->sc_msg[0] = 0;
 
-	screset(hc->hp_unit);
+	screset(hs);
 	return(1);
 }
 
 void
-screset(int unit)
+screset(struct scsi_softc *hs)
 {
-	struct scsi_softc *hs = &scsi_softc[unit];
-	struct scsidevice *hd = (struct scsidevice *)hs->sc_hc->hp_addr;
+	struct scsidevice *hd = hs->sc_spc;
 
-	printf("sc%d: ", unit);
+	printf("sc%d: ", hs->sc_ctlr);
 
 	/*
 	 * Disable interrupts then reset the FUJI chip.
@@ -251,7 +251,7 @@ ixfer_in(struct scsidevice *hd, int len, u_char *buf)
  */
 
 int
-scrun(int ctlr, int slave, u_char *cdb, int cdblen, u_char *buf, int len,
+scrun(int ctlr, int target, u_char *cdb, int cdblen, u_char *buf, int len,
     volatile int *lock)
 {
 	struct scsi_softc *hs;
@@ -261,14 +261,16 @@ scrun(int ctlr, int slave, u_char *cdb, int cdblen, u_char *buf, int len,
 		return 0;
 
 	hs = &scsi_softc[ctlr];
-	hd = (struct scsidevice *)hs->sc_hc->hp_addr;
+	hd = hs->sc_spc;
+	if (hd == NULL)
+		return 0;
 
 	if (hd->scsi_ssts & (SSTS_INITIATOR|SSTS_TARGET|SSTS_BUSY))
 		return(0);
 
 	hs->sc_flags  = 0;
 	hs->sc_phase  = ARB_SEL_PHASE;
-	hs->sc_target = slave;
+	hs->sc_target = target;
 
 	hs->sc_cdb    = cdb;
 	hs->sc_cdblen = cdblen;
@@ -308,13 +310,14 @@ scfinish(int ctlr)
 }
 
 void
-scabort(struct scsi_softc *hs, struct scsidevice *hd)
+scabort(struct scsi_softc *hs)
 {
+	struct scsidevice *hd = hs->sc_spc;
 	int len;
 	u_char junk;
 
 	printf("sc%d: abort  phase=0x%x, ssts=0x%x, ints=0x%x\n",
-		hs->sc_hc->hp_unit, hd->scsi_psns, hd->scsi_ssts,
+		hs->sc_ctlr, hd->scsi_psns, hd->scsi_ssts,
 		hd->scsi_ints);
 
 	if (hd->scsi_ints != 0)
@@ -365,7 +368,7 @@ out:
 	 */
 	if (len < 0 && hs)
 		printf("sc%d: abort failed.  phase=0x%x, ssts=0x%x\n",
-			hs->sc_hc->hp_unit, hd->scsi_psns, hd->scsi_ssts);
+			hs->sc_ctlr, hd->scsi_psns, hd->scsi_ssts);
 }
 
 
@@ -374,19 +377,19 @@ out:
  */
 
 int
-scsi_test_unit_rdy(int ctlr, int slave, int unit)
+scsi_test_unit_rdy(int ctlr, int target, int lun)
 {
 	static struct scsi_cdb6 cdb = { CMD_TEST_UNIT_READY };
 	int status;
 	volatile int lock;
 
 #ifdef DEBUG
-	printf("scsi_test_unit_rdy( %d, %d, %d): Start\n", ctlr, slave, unit);
+	printf("scsi_test_unit_rdy( %d, %d, %d): Start\n", ctlr, target, lun);
 #endif
 
-	cdb.lun = unit;
+	cdb.lun = lun;
 
-	if (!(scrun(ctlr, slave, (void *)&cdb, 6, NULL, 0, &lock))) {
+	if (!(scrun(ctlr, target, (void *)&cdb, 6, NULL, 0, &lock))) {
 #ifdef DEBUG
 		printf("scsi_test_unit_rdy: Command Transfer Failed.\n");
 #endif
@@ -409,7 +412,7 @@ scsi_test_unit_rdy(int ctlr, int slave, int unit)
 }
 
 int
-scsi_request_sense(int ctlr, int slave, int unit, u_char *buf, unsigned int len)
+scsi_request_sense(int ctlr, int target, int lun, u_char *buf, unsigned int len)
 {
 	static struct scsi_cdb6 cdb = {	CMD_REQUEST_SENSE };
 	int status;
@@ -427,10 +430,10 @@ scsi_request_sense(int ctlr, int slave, int unit, u_char *buf, unsigned int len)
 	/* テープユニットの状態を調べるため、Addtional Sens Fieldをアクセスする */
 	/* 必要があるのでデバイスドライバ側でlenを決定することにする            */
 
-	cdb.lun = unit;
+	cdb.lun = lun;
 	cdb.len = len;
 
-	if (!(scrun(ctlr, slave, (void *)&cdb, 6, buf, len, &lock))) {
+	if (!(scrun(ctlr, target, (void *)&cdb, 6, buf, len, &lock))) {
 #ifdef DEBUG
 		printf("scsi_request_sense: Command Transfer Failed.\n");
 #endif
@@ -453,7 +456,7 @@ scsi_request_sense(int ctlr, int slave, int unit, u_char *buf, unsigned int len)
 }
 
 int
-scsi_immed_command(int ctlr, int slave, int unit, struct scsi_generic_cdb *cdb,
+scsi_immed_command(int ctlr, int target, int lun, struct scsi_generic_cdb *cdb,
     u_char *buf, unsigned int len)
 {
 	int status;
@@ -461,12 +464,12 @@ scsi_immed_command(int ctlr, int slave, int unit, struct scsi_generic_cdb *cdb,
 
 #ifdef DEBUG
 	printf("scsi_immed_command( %d, %d, %d, cdb(%d), buf, %d): Start\n",
-	       ctlr, slave, unit, cdb->len, len);
+	       ctlr, target, lun, cdb->len, len);
 #endif
 
-	cdb->cdb[1] |= unit << 5;
+	cdb->cdb[1] |= lun << 5;
 
-	if (!(scrun(ctlr, slave, (void *)&cdb->cdb[0], cdb->len, buf, len, &lock))) {
+	if (!(scrun(ctlr, target, (void *)&cdb->cdb[0], cdb->len, buf, len, &lock))) {
 #ifdef DEBUG
 		printf("scsi_immed_command: Command Transfer Failed.\n");
 #endif
@@ -489,7 +492,7 @@ scsi_immed_command(int ctlr, int slave, int unit, struct scsi_generic_cdb *cdb,
 }
 
 int
-scsi_format_unit(int ctlr, int slave, int unit)
+scsi_format_unit(int ctlr, int target, int lun)
 {
 	static struct scsi_cdb6 cdb = { CMD_FORMAT_UNIT, 0, 0, 0, 0, 0 };
 	int status;
@@ -499,12 +502,12 @@ scsi_format_unit(int ctlr, int slave, int unit)
 #endif
 
 #ifdef DEBUG
-	printf("scsi_format_unit( %d, %d, %d): Start\n", ctlr, slave, unit);
+	printf("scsi_format_unit( %d, %d, %d): Start\n", ctlr, target, lun);
 #endif
 
-	cdb.lun = unit;
+	cdb.lun = lun;
 
-	if (!(scrun(ctlr, slave, (void *)&cdb, 6, (u_char *) 0, 0, &lock))) {
+	if (!(scrun(ctlr, target, (void *)&cdb, 6, (u_char *) 0, 0, &lock))) {
 #ifdef DEBUG
 		printf("scsi_format_unit: Command Transfer Failed.\n");
 #endif
@@ -548,7 +551,7 @@ scintr(void)
 
 	for (i = 0; i < NSC; i++) {
 		hs = &scsi_softc[i];
-		hd = (struct scsidevice *) hs->sc_hc->hp_addr;
+		hd = hs->sc_spc;
 		if ((ints = hd->scsi_ints) != 0)
 			goto get_intr;
 	}
@@ -669,7 +672,7 @@ scintr(void)
 	 */
  abort:
 	/* SCSI IO failed */
-	scabort(hs, hd);
+	scabort(hs);
 	hd->scsi_ints = ints;
 	*(hs->sc_lock) = SC_IO_FAILED;
 	return -1;

@@ -71,7 +71,9 @@
  */
 
 struct	scsi_softc {
-	struct	hp_ctlr *sc_hc;
+	struct	scsidevice *sc_spc;
+	int	sc_ctlr;
+
 	u_char	*sc_buf;				/* Data Buffer Pointor*/
 	u_char	*sc_cdb;				/* CDB Buffer Pointor */
 	volatile int *sc_lock;				/* Lock Flag addres   */
