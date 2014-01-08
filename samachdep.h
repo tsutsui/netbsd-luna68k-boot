@@ -102,7 +102,7 @@ int fsrestore(int, char **);
 int getline(const char *, char *);
 
 /* if_le.c */
-int leinit(void *);
+int leinit(int, void *);
 
 /* init_main.c */
 extern int cpuspeed;
@@ -167,6 +167,9 @@ int  romcngetc(dev_t);
 void romcnputc(dev_t, int);
 
 /* sc.c */
+int scinit(int, void *);
+struct scsi_inquiry;
+bool scident(uint, uint, uint, struct scsi_inquiry *, uint32_t *);
 struct scsi_generic_cdb;
 int scsi_immed_command(int, int, int, struct scsi_generic_cdb *, u_char *,
     unsigned int);
@@ -209,6 +212,11 @@ void trap(int, unsigned int, unsigned int, struct frame);
 /* ufs_disklabel.c */
 char *readdisklabel(int, int, struct disklabel *);
 
+
+/* use following device unit number strategy to make parser easier */
+#define	UNIT(ctlr, target)	((ctlr) * 10 + (target))
+#define	CTLR(unit)		((unit) / 10)
+#define	TARGET(unit)		((unit) % 10)
 
 #define DELAY(n)							\
 do {									\

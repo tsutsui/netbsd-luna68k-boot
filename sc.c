@@ -84,11 +84,10 @@
 #include <luna68k/stand/boot/device.h>
 #include <luna68k/stand/boot/scsivar.h>
 
-#define SCSI_IPL	2
 #define SCSI_ID		7
 
-static int scinit(void *);
 static void screset(struct scsi_softc *);
+static void scprobe(struct scsi_softc *, uint, uint);
 static int issue_select(struct scsidevice *, u_char);
 static void ixfer_start(struct scsidevice *, int, u_char, int);
 static void ixfer_out(struct scsidevice *, int, u_char *);
@@ -97,10 +96,6 @@ static int scrun(int, int, u_char *, int, u_char *, int, volatile int *);
 static int scfinish(int);
 static void scabort(struct scsi_softc *);
 
-struct	driver scdriver = {
-	scinit, "sc", scintr,
-};
-
 struct	scsi_softc scsi_softc[NSC];
 
 /*
@@ -108,17 +103,13 @@ struct	scsi_softc scsi_softc[NSC];
  */
 
 int
-scinit(void *arg)
+scinit(int ctlr, void *addr)
 {
-	struct hp_ctlr *hc = arg;
-	int ctlr = hc->hp_unit;
-	void *addr = hc->hp_addr;
 	struct scsi_softc *hs;
+	uint id;
 
 	if (ctlr < 0 || ctlr >= NSC)
 		return 0;
-
-	hc->hp_ipl    = SCSI_IPL;
 
 	hs = &scsi_softc[ctlr];
 	hs->sc_ctlr   = ctlr;
@@ -138,6 +129,10 @@ scinit(void *arg)
 	hs->sc_msg[0] = 0;
 
 	screset(hs);
+
+	for (id = 0; id < 7; id++)
+		scprobe(hs, id, 0);
+
 	return(1);
 }
 
@@ -146,7 +141,7 @@ screset(struct scsi_softc *hs)
 {
 	struct scsidevice *hd = hs->sc_spc;
 
-	printf("sc%d: ", hs->sc_ctlr);
+	printf("sc%d at 0x%08lx: ", hs->sc_ctlr, (u_long)hs->sc_spc);
 
 	/*
 	 * Disable interrupts then reset the FUJI chip.
@@ -177,7 +172,98 @@ screset(struct scsi_softc *hs)
 	DELAY(400);
 	hd->scsi_sctl &= ~SCTL_DISABLE;
 
-	printf(", scsi id %d\n", SCSI_ID);
+	printf(", ID %d\n", SCSI_ID);
+}
+
+bool
+scident(uint ctlr, uint target, uint lun, struct scsi_inquiry *inqout,
+    uint32_t *capout)
+{
+	struct scsi_inquiry inqbuf;
+	struct scsi_generic_cdb inq = {
+		6,
+		{ CMD_INQUIRY, 0, 0, 0, sizeof(inqbuf), 0 }
+	};
+	uint32_t capbuf[2];
+	struct scsi_generic_cdb cap = {
+		10,
+		{ CMD_READ_CAPACITY, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
+	};
+	int i;
+	int tries = 10;
+
+	/*
+	 * See if unit exists and is a disk then read block size & nblocks.
+	 */
+	while ((i = scsi_test_unit_rdy(ctlr, target, lun)) != 0) {
+		if (i < 0 || --tries < 0)
+			return false;
+		if (i == STS_CHECKCOND) {
+			u_char sensebuf[8];
+			struct scsi_xsense *sp = (struct scsi_xsense *)sensebuf;
+
+			scsi_request_sense(ctlr, target, lun, sensebuf, 8);
+			if (sp->class == 7 && sp->key == 6)
+				/* drive doing an RTZ -- give it a while */
+				DELAY(1000000);
+		}
+		DELAY(1000);
+	}
+	if (scsi_immed_command(ctlr, target, lun, &inq, (u_char *)&inqbuf,
+			       sizeof(inqbuf)) ||
+	    scsi_immed_command(ctlr, target, lun, &cap, (u_char *)&capbuf,
+			       sizeof(capbuf)))
+		/* doesn't exist or not a CCS device */
+		return false;
+
+	switch (inqbuf.type) {
+	case 0:		/* disk */
+	case 4:		/* WORM */
+	case 5:		/* CD-ROM */
+	case 7:		/* Magneto-optical */
+		break;
+	default:	/* not a disk */
+		return false;
+	}
+
+	if (inqout != NULL)
+		*inqout = inqbuf;
+	if (capout != NULL) {
+		/* assume big endian */
+		capout[0] = capbuf[0];
+		capout[1] = capbuf[1];
+	}
+
+	return true;
+}
+
+static void
+scprobe(struct scsi_softc *hs, uint target, uint lun)
+{
+	struct scsi_inquiry inqbuf;
+	uint32_t capbuf[2];
+	char idstr[32];
+	int i;
+
+	if (!scident(hs->sc_ctlr, target, lun, &inqbuf, capbuf))
+		return;
+
+	memcpy(idstr, &inqbuf.vendor_id, 28);
+	for (i = 27; i > 23; --i)
+		if (idstr[i] != ' ')
+			break;
+	idstr[i + 1] = '\0';
+	for (i = 23; i > 7; --i)
+		if (idstr[i] != ' ')
+			break;
+	idstr[i + 1] = '\0';
+	for (i = 7; i >= 0; --i)
+		if (idstr[i] != ' ')
+			break;
+	idstr[i + 1] = '\0';
+
+	printf(" ID %d: %s %s rev %s", target, idstr, &idstr[8], &idstr[24]);
+	printf(", %d bytes/sect x %d sectors\n", capbuf[1], capbuf[0]);
 }
 
 

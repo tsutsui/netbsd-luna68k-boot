@@ -12,3 +12,5 @@ is taken as the current.
 1.5:	Check netboot and set proper default boot device.
 1.6:	Accept empty unit, partition, and filename. (defaults: 0, 0, "netbsd")
 1.7:	Check boot device on PROM and set proper default boot device and unit.
+1.8:	Probe SCSI devices at any IDs and change boot command to use SCSI
+	controller number and target ID to specify the boot disk.

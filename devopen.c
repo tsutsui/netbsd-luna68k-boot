@@ -155,7 +155,7 @@ make_device(const char *str, int *devp, int *unitp, int *partp, char **fname)
 		if (*cp >= '0' && *cp <= '9')
 			unit = unit * 10 + *cp - '0';
 	}
-	if (unit < 0 || unit >= 20 || (unit % 10) > 7) {
+	if (unit < 0 || CTLR(unit) >= 2 || TARGET(unit) > 7) {
 #ifdef DEBUG
 		printf("%s: invalid unit number (%d)\n", __func__, unit);
 #endif

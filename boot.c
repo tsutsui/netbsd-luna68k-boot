@@ -159,7 +159,7 @@ get_boot_device(const char *s, int *devp, int *unitp, int *partp)
 	}
 
 	*devp  = 0;	/* XXX not yet */
-	*unitp = unit;	/* XXX should pass SCSI ID, not logical unit number */
+	*unitp = unit;
 	*partp = part;
 
 	return 0;

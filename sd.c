@@ -97,96 +97,24 @@ struct	sd_softc {
 	struct disklabel sc_label;
 };
 
-static int sdinit(void *);
+static struct sd_softc *sdinit(uint);
 static int sdident(struct sd_softc *);
-
-struct	driver sddriver = {
-	sdinit, "sd", NULL,
-};
-
-struct sd_softc sd_softc[NSD];
-
-static struct scsi_inquiry inqbuf;
-static struct scsi_generic_cdb inq = {
-	6,
-	{ CMD_INQUIRY, 0, 0, 0, sizeof(inqbuf), 0 }
-};
-
-static u_long capbuf[2];
-struct scsi_generic_cdb cap = {
-	10,
-	{ CMD_READ_CAPACITY, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
-};
 
 int
 sdident(struct sd_softc *sc)
 {
-	char idstr[32];
-	int ctlr, target, lun;
+	struct scsi_inquiry inqbuf;
+	uint32_t capbuf[2];
 	int i;
-	int tries = 10;
 
-	ctlr = sc->sc_ctlr;
-	target = sc->sc_tgt;
-	lun = sc->sc_lun;
+	if (!scident(sc->sc_ctlr, sc->sc_tgt, sc->sc_lun, &inqbuf, capbuf))
+		return -1;
 
-	/*
-	 * See if unit exists and is a disk then read block size & nblocks.
-	 */
-	while ((i = scsi_test_unit_rdy(ctlr, target, lun)) != 0) {
-		if (i < 0 || --tries < 0)
-			return (-1);
-		if (i == STS_CHECKCOND) {
-			u_char sensebuf[8];
-			struct scsi_xsense *sp = (struct scsi_xsense *)sensebuf;
-
-			scsi_request_sense(ctlr, target, lun, sensebuf, 8);
-			if (sp->class == 7 && sp->key == 6)
-				/* drive doing an RTZ -- give it a while */
-				DELAY(1000000);
-		}
-		DELAY(1000);
-	}
-	if (scsi_immed_command(ctlr, target, lun, &inq, (u_char *)&inqbuf,
-			       sizeof(inqbuf)) ||
-	    scsi_immed_command(ctlr, target, lun, &cap, (u_char *)&capbuf,
-			       sizeof(capbuf)))
-		/* doesn't exist or not a CCS device */
-		return (-1);
-
-	switch (inqbuf.type) {
-	case 0:		/* disk */
-	case 4:		/* WORM */
-	case 5:		/* CD-ROM */
-	case 7:		/* Magneto-optical */
-		break;
-	default:	/* not a disk */
-		return (-1);
-	}
 	sc->sc_blks    = capbuf[0];
 	sc->sc_blksize = capbuf[1];
 
-	memcpy(idstr, &inqbuf.vendor_id, 28);
-	for (i = 27; i > 23; --i)
-		if (idstr[i] != ' ')
-			break;
-	idstr[i+1] = 0;
-	for (i = 23; i > 7; --i)
-		if (idstr[i] != ' ')
-			break;
-	idstr[i+1] = 0;
-	for (i = 7; i >= 0; --i)
-		if (idstr[i] != ' ')
-			break;
-	idstr[i+1] = 0;
-	printf("sd%d: %s %s rev %s", sc->sc_unit, idstr, &idstr[8],
-	       &idstr[24]);
-
-	printf(", %d bytes/sect x %d sectors\n", sc->sc_blksize, sc->sc_blks);
 	if (sc->sc_blksize != DEV_BSIZE) {
 		if (sc->sc_blksize < DEV_BSIZE) {
-			printf("sd%d: need %d byte blocks - drive ignored\n",
-				sc->sc_unit, DEV_BSIZE);
 			return (-1);
 		}
 		for (i = sc->sc_blksize; i > DEV_BSIZE; i >>= 1)
@@ -196,31 +124,27 @@ sdident(struct sd_softc *sc)
 	return(inqbuf.type);
 }
 
-int
-sdinit(void *arg)
+struct sd_softc *
+sdinit(uint unit)
 {
-	struct hp_device *hd = arg;
-	int unit = hd->hpd_unit;
-	int ctlr = hd->hpd_ctlr;
-	int target = hd->hpd_slave;
 	struct sd_softc *sc;
 	struct disklabel *lp;
 	char *msg;
 	int type;
 
 #ifdef DEBUG
-	printf("sdinit: hd->hpd_unit = %d\n", unit);
-	printf("sdinit: hd->hpd_ctlr = %d, hd->hpd_slave = %d\n",
-	       ctlr, target);
+	printf("sdinit: unit = %d\n", unit);
 #endif
-	sc = &sd_softc[unit];
+	sc = alloc(sizeof *sc);
+	memset(sc, 0, sizeof *sc);
+
 	sc->sc_unit = unit;
-	sc->sc_ctlr = ctlr;
-	sc->sc_tgt  = target;
+	sc->sc_ctlr = CTLR(unit);
+	sc->sc_tgt  = TARGET(unit);
 	sc->sc_lun  = 0;	/* XXX no LUN support yet */
 	type = sdident(sc);
 	if (type < 0)
-		return(0);
+		return NULL;
 
 	/*
 	 * Use the default sizes until we've read the label,
@@ -241,11 +165,11 @@ sdinit(void *arg)
 	/*
 	 * read disklabel
 	 */
-	msg = readdisklabel(ctlr, target, lp);
+	msg = readdisklabel(sc->sc_ctlr, sc->sc_tgt, lp);
 	if (msg != NULL)
-		printf("sd%d: %s\n", unit, msg);
+		printf("sd(%d): %s\n", unit, msg);
 
-	return(1);
+	return sc;
 }
 
 int
@@ -260,12 +184,14 @@ sdopen(struct open_file *f, ...)
 	part = va_arg(ap, int);
 	va_end(ap);
 
-	if (unit < 0 || unit >= NSD)
+	if (unit < 0 || CTLR(unit) >= 2 || TARGET(unit) >= 7)
 		return(-1);
-	if (part < 0 || part >= 8)
+	if (part < 0 || part >= MAXPARTITIONS)
 		return(-1);
 
-	sc = &sd_softc[unit];
+	sc = sdinit(unit);
+	if (sc == NULL)
+		return -1;
 
 	sc->sc_part = part;
 	f->f_devdata = (void *)sc;
@@ -278,7 +204,7 @@ sdclose(struct open_file *f)
 {
 	struct sd_softc *sc = f->f_devdata;
 
-	sc->sc_part = -1;
+	dealloc(sc, sizeof *sc);
 	f->f_devdata = NULL;
 
 	return 0;

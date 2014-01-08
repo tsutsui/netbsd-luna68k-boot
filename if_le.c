@@ -84,13 +84,6 @@ static void le_end(struct netif *);
 
 static void myetheraddr(uint8_t *);
 
-/* luna68k driver glue stuff */
-struct driver ledriver = {
-	leinit,
-	"le",
-	NULL
-};
-
 /* libsa netif glue stuff */
 struct netif_stats le_stats;
 struct netif_dif le_ifs[] = {
@@ -114,27 +107,25 @@ int debug;
 #endif
 
 int
-leinit(void *arg)
+leinit(int unit, void *addr)
 {
-	struct hp_device *hd = arg;
 	void *cookie;
 	void *reg, *mem;
 	uint8_t eaddr[6];
 
-	reg = hd->hpd_addr;
+	reg = addr;
 	mem = (void *)0x71010000;	/* XXX */
 
 	myetheraddr(eaddr);
 
-	cookie = lance_attach(hd->hpd_unit, reg, mem, eaddr);
+	cookie = lance_attach(unit, reg, mem, eaddr);
 	if (cookie == NULL)
 		return 0;
 
-	printf("%s%d: Am7990 LANCE Ethernet, mem at 0x%x\n",
-	    hd->hpd_driver->d_name, hd->hpd_unit, (uint32_t)mem);
-	printf("%s%d: Ethernet address = %s\n",
-	    hd->hpd_driver->d_name, hd->hpd_unit,
-	    ether_sprintf(eaddr));
+	printf("le%d: Am7990 LANCE Ethernet, mem at 0x%x\n",
+	    unit, (uint32_t)mem);
+	printf("le%d: Ethernet address = %s\n",
+	    unit, ether_sprintf(eaddr));
 
 	return 1;
 }

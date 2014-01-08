@@ -32,7 +32,7 @@ LDSCRIPT=	${.CURDIR}/boot.ldscript
 LINKFORMAT=	-static -N -Ttext ${TEXTADDR} -T ${LDSCRIPT}
 
 SRCS=	locore.S
-SRCS+=	init_main.c autoconf.c ioconf.c
+SRCS+=	init_main.c autoconf.c
 SRCS+=	trap.c
 SRCS+=	devopen.c
 SRCS+=	conf.c
