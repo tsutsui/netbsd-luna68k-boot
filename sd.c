@@ -83,7 +83,6 @@
 #include <sys/disklabel.h>
 #include <luna68k/stand/boot/samachdep.h>
 #include <luna68k/stand/boot/scsireg.h>
-#include <luna68k/stand/boot/device.h>
 
 struct	sd_softc {
 	int	sc_unit;

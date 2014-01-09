@@ -83,7 +83,6 @@
 #include <sys/param.h>
 #include <sys/mtio.h>
 #include <luna68k/stand/boot/scsireg.h>
-#include <luna68k/stand/boot/device.h>
 
 static int stinit(void *);
 

@@ -81,7 +81,6 @@
 #include <sys/param.h>
 #include <luna68k/stand/boot/samachdep.h>
 #include <luna68k/stand/boot/scsireg.h>
-#include <luna68k/stand/boot/device.h>
 #include <luna68k/stand/boot/scsivar.h>
 
 #define SCSI_ID		7

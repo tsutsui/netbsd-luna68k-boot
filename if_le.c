@@ -72,7 +72,6 @@
 #include <lib/libsa/netif.h>
 
 #include <luna68k/stand/boot/samachdep.h>
-#include <luna68k/stand/boot/device.h>
 
 /* libsa netif_driver glue functions */
 static int  le_match(struct netif *, void *);
