@@ -1,4 +1,4 @@
-/*	$NetBSD: autoconf.c,v 1.9 2014/01/03 03:25:25 tsutsui Exp $	*/
+/*	$NetBSD: autoconf.c,v 1.10 2014/01/10 11:12:03 tsutsui Exp $	*/
 
 /*-
  * Copyright (c) 2013 Izumi Tsutsui.  All rights reserved.
