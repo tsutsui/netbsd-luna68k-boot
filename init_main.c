@@ -94,11 +94,6 @@ char default_file[64];
 
 int nplane;
 
-/* KIFF */
-
-struct KernInter  KIFF;
-struct KernInter *kiff = &KIFF;
-
 /* for command parser */
 
 #define BUFFSIZE 100
@@ -207,11 +202,7 @@ main(void)
 	printf(">> (based on Stinger ver 0.0 [%s])\n", VERS_LOCAL);
 	printf("\n");
 
-	kiff->maxaddr = (void *) (ROM_memsize -1);
-	kiff->dipsw   = ~((dipsw2 << 8) | dipsw1) & 0xFFFF;
-	kiff->plane   = nplane;
-
-	i = (int) kiff->maxaddr + 1;
+	i = ROM_memsize;
 	printf("Machine model   = %s\n", machstr);
 	printf("Physical Memory = 0x%x  ", i);
 	i >>= 20;
