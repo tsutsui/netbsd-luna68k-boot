@@ -1,4 +1,4 @@
-/*	$NetBSD: init_main.c,v 1.9 2014/01/10 11:12:03 tsutsui Exp $	*/
+/*	$NetBSD: init_main.c,v 1.10 2014/01/11 08:08:23 tsutsui Exp $	*/
 
 /*
  * Copyright (c) 1992 OMRON Corporation.
