@@ -74,7 +74,6 @@
 #include <sys/boot_flag.h>
 #include <machine/cpu.h>
 #include <luna68k/stand/boot/samachdep.h>
-#include <luna68k/stand/boot/stinger.h>
 #include <luna68k/stand/boot/romvec.h>
 #include <luna68k/stand/boot/status.h>
 #include <lib/libsa/loadfile.h>

@@ -80,7 +80,6 @@
 #include <sys/reboot.h>
 #include <sys/exec.h>
 #include <luna68k/stand/boot/samachdep.h>
-#include <luna68k/stand/boot/stinger.h>
 #include <luna68k/stand/boot/status.h>
 #include <lib/libsa/loadfile.h>
 
