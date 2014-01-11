@@ -1,4 +1,4 @@
-/*	$NetBSD: omron_disklabel.h,v 1.3 2013/01/22 15:48:40 tsutsui Exp $	*/
+/*	$NetBSD: omron_disklabel.h,v 1.4 2014/01/11 15:51:02 tsutsui Exp $	*/
 
 /*
  * Copyright (c) 1992 OMRON Corporation.

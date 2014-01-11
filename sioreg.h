@@ -1,4 +1,4 @@
-/*	$NetBSD: sioreg.h,v 1.2 2013/01/12 07:04:57 tsutsui Exp $	*/
+/*	$NetBSD: sioreg.h,v 1.3 2014/01/11 15:51:02 tsutsui Exp $	*/
 
 /*
  * Copyright (c) 1992 OMRON Corporation.

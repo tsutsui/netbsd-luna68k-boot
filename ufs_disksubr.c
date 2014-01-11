@@ -1,4 +1,4 @@
-/*	$NetBSD: ufs_disksubr.c,v 1.3 2014/01/03 07:17:19 tsutsui Exp $	*/
+/*	$NetBSD: ufs_disksubr.c,v 1.4 2014/01/11 15:51:02 tsutsui Exp $	*/
 
 /*
  * Copyright (c) 1992 OMRON Corporation.
