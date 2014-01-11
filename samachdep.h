@@ -54,6 +54,7 @@ typedef struct label_t {
 /* autoconf.c */
 void configure(void);
 void find_devs(void);
+extern const int dev2adpt[];
 
 /* awaitkey.c */
 char awaitkey(const char *, int, bool);
@@ -71,10 +72,8 @@ void bmdadjust(short, short);
 void bmdclear(void);
 
 /* boot.c */
-extern int howto;
-int how_to_boot(int, char **);
 int boot(int, char **);
-int bootnetbsd(char *);
+int bootnetbsd(char *, int);
 
 /* clock.c */
 /* not yet */
@@ -83,6 +82,9 @@ int bootnetbsd(char *);
 void cninit(void);
 int cngetc(void);
 void cnputc(int);
+
+/* devopen.c */
+int make_device(const char *, int *, int *, int *, char **);
 
 /* disklabel.c */
 extern u_char lbl_buff[];

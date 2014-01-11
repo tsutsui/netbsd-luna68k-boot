@@ -179,6 +179,7 @@ main(void)
 	int i, status = 0;
 	const char *machstr;
 	const char *bootdev;
+	uint32_t howto;
 	int unit, part;
 	int bdev, ctlr, id;
 
@@ -307,7 +308,7 @@ main(void)
 		c = awaitkey("%d seconds. ", boot_timeout, true);
 		if (c == '\r' || c == '\n' || c == 0) {
 			printf("auto-boot %s\n", default_file);
-			bootnetbsd(default_file);
+			bootnetbsd(default_file, 0);
 		}
 	}
 
