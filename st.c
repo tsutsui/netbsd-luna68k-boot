@@ -142,13 +142,13 @@ stinit(void *arg)
 	sc->sc_punit = 0;	/* XXX no LUN support yet */
 	sc->sc_type = stident(sc, hd);
 	if (sc->sc_type < 0)
-		return(0);
+		return 0;
 	sc->sc_dq.dq_ctlr = hd->hpd_ctlr;
 	sc->sc_dq.dq_unit = unit;
 	sc->sc_dq.dq_slave = hd->hpd_slave;
 	sc->sc_dq.dq_driver = &stdriver;
 	sc->sc_flags = STF_ALIVE;
-	return(1);
+	return 1;
 }
 
 static struct scsi_inquiry inqbuf;
@@ -174,39 +174,39 @@ stident(struct st_softc *sc, struct hp_device *hd)
 	 * See if unit exists and is a disk then read block size & nblocks.
 	 */
 	while ((stat = scsi_immed_command(ctlr, slave, unit,
-				  &inq, (u_char *)&inqbuf, sizeof(inqbuf))) != 0) {
+	    &inq, (u_char *)&inqbuf, sizeof(inqbuf))) != 0) {
 		if (stat < 0 || --tries < 0)
-			return (-1);
+			return -1;
 		DELAY(1000);
 	}
 
 	if (stat)
-		return (-1);
+		return -1;
 
 	switch (inqbuf.type) {
 	case 1:		/* tape */
 		break;
 	default:	/* not a disk */
-		return (-1);
+		return -1;
 	}
 
 	memcpy(idstr, (void *)&inqbuf.vendor_id, 28);
 	for (i = 27; i > 23; --i)
 		if (idstr[i] != ' ')
 			break;
-	idstr[i+1] = 0;
+	idstr[i + 1] = '\0';
 	for (i = 23; i > 7; --i)
 		if (idstr[i] != ' ')
 			break;
-	idstr[i+1] = 0;
+	idstr[i + 1] = '\0';
 	for (i = 7; i >= 0; --i)
 		if (idstr[i] != ' ')
 			break;
-	idstr[i+1] = 0;
+	idstr[i + 1] = '\0';
 	printf("st%d: %s %s rev %s\n", hd->hpd_unit, idstr, &idstr[8],
 	       &idstr[24]);
 
-	return(inqbuf.type);
+	return inqbuf.type;
 }
 
 
@@ -221,15 +221,15 @@ stopen(dev_t dev)
 	struct st_softc *sc = &st_softc[unit];
 
 	if (unit >= NST || (sc->sc_flags & STF_ALIVE) == 0)
-		return(-1);
+		return -1;
 	if (sc->sc_flags & STF_OPEN)
-		return(-1);
+		return -1;
 
 	sc->sc_flags |= STF_OPEN;
 	sc->sc_flags |= STF_WMODE;
 	sc->sc_flags &= ~STF_MOVED;
 
-	return(0);
+	return 0;
 }
 
 /*ARGSUSED*/
@@ -250,7 +250,7 @@ stclose(dev_t dev)
 
 	sc->sc_flags &= ~(STF_OPEN|STF_WMODE|STF_WRTTN);
 
-	return(0);
+	return 0;
 }
 
 /*
@@ -305,7 +305,7 @@ sterror(int unit, struct st_softc *sc, struct hp_device *hp, int stat)
 		}
 		printf("\n");
 	}
-	return(cond);
+	return cond;
 }
 
 /*
@@ -315,28 +315,29 @@ sterror(int unit, struct st_softc *sc, struct hp_device *hp, int stat)
 char *
 sense_key(int key)
 {
+
 	if (key == 0)
-		return("No Sense");
+		return "No Sense";
 	else if (key == 2)
-		return("Not Ready");
+		return "Not Ready";
 	else if (key == 3)
-		return("Medium Error");
+		return "Medium Error";
 	else if (key == 4)
-		return("Hardware Error");
+		return "Hardware Error";
 	else if (key == 5)
-		return("Illegal Request");
+		return "Illegal Request";
 	else if (key == 6)
-		return("Unit Attention");
+		return "Unit Attention";
 	else if (key == 7)
-		return("Data Protect");
+		return "Data Protect";
 	else if (key == 8)
-		return("No Data");
+		return "No Data";
 	else if (key == 11)
-		return("Aborted Command");
+		return "Aborted Command";
 	else if (key == 13)
-		return("Volume Overflow");
+		return "Volume Overflow";
 	else
-		return("Unknown Error");
+		return "Unknown Error";
 }
 
 static struct scsi_generic_cdb st_cmd  = {
@@ -358,7 +359,7 @@ stread(dev_t dev, char *buf, int size)
 
 	ctlr  = sc->sc_hd->hpd_ctlr;
 	slave = sc->sc_hd->hpd_slave;
-	
+
 	cdb->cdb[0] = CMD_READ;
 	cdb->cdb[1] = 1;		/* unknown setup */
 
@@ -371,7 +372,7 @@ stread(dev_t dev, char *buf, int size)
 	stat = scsi_immed_command(ctlr, slave, 0, cdb, buf, size);
 
 	if (stat == 0)
-		return(size);
+		return size;
 	else {
 		scsi_request_sense(ctlr, slave, 0, sp, 8);
 
@@ -384,7 +385,7 @@ stread(dev_t dev, char *buf, int size)
 			printf("\n");
 		}
 
-		return(-1);
+		return -1;
 	}
 }
 
@@ -407,7 +408,7 @@ stwrite(dev_t dev, char *buf, int size)
 	slave = sc->sc_hd->hpd_slave;
 
 	sc->sc_flags |= STF_WRTTN;
-	
+
 	cdb->cdb[0] = CMD_WRITE;
 	cdb->cdb[1] = 1;		/* unknown setup */
 
@@ -420,7 +421,7 @@ stwrite(dev_t dev, char *buf, int size)
 	stat = scsi_immed_command(ctlr, slave, 0, cdb, buf, size);
 
 	if (stat == 0)
-		return(size);
+		return size;
 	else {
 		scsi_request_sense(ctlr, slave, 0, sp, 8);
 
@@ -431,7 +432,7 @@ stwrite(dev_t dev, char *buf, int size)
 			printf("\n");
 		}
 
-		return(-1);
+		return -1;
 	}
 }
 
@@ -461,12 +462,13 @@ st_rewind(dev_t dev)
 	stat = scsi_immed_command(ctlr, slave, 0, cdb, (char *) 0, 0);
 
 	if (stat == 0) {
-		return(1);
+		return 1;
 	} else {
 		scsi_request_sense(ctlr, slave, 0, sp, 8);
 
 		if (stat == STS_CHECKCOND) {
-			printf("st_rewind: Sense Key = [%s]", sense_key(sp->key));
+			printf("st_rewind: Sense Key = [%s]",
+			    sense_key(sp->key));
 			printf("\n");
 		}
 
@@ -476,7 +478,7 @@ st_rewind(dev_t dev)
 			goto rewind;
 		}
 
-		return(0);
+		return 0;
 	}
 }
 
@@ -491,7 +493,7 @@ st_write_EOF(dev_t dev)
 
 	ctlr  = sc->sc_hd->hpd_ctlr;
 	slave = sc->sc_hd->hpd_slave;
-	
+
 	cdb->cdb[0] = CMD_WRITE_FILEMARK;
 	cdb->cdb[1] = 1;	/* command finished soon */
 
@@ -504,11 +506,11 @@ st_write_EOF(dev_t dev)
 	stat = scsi_immed_command(ctlr, slave, 0, cdb, (char *) 0, 0);
 
 	if (stat == 0)
-		return(1);
+		return 1;
 
 	printf("st: write EOF error\n");
 
-	return(0);
+	return 0;
 }
 
 int
@@ -523,7 +525,7 @@ st_skip(dev_t dev)
 
 	ctlr  = sc->sc_hd->hpd_ctlr;
 	slave = sc->sc_hd->hpd_slave;
-	
+
 	cdb->cdb[0] = CMD_SPACE;
 	cdb->cdb[1] = 1;		/* it mean skip until EOF */
 
@@ -536,7 +538,7 @@ st_skip(dev_t dev)
 	stat = scsi_immed_command(ctlr, slave, 0, cdb, 0, 0);
 
 	if (stat == 0)
-		return(0);
+		return 0;
 	else {
 		scsi_request_sense(ctlr, slave, 0, sp, 8);
 
@@ -549,6 +551,6 @@ st_skip(dev_t dev)
 			printf("\n");
 		}
 
-		return(-1);
+		return -1;
 	}
 }

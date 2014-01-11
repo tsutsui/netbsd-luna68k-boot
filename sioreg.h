@@ -84,10 +84,10 @@ struct siodevice {
 #define splsio			spl6
 
 
-#define REG(u, r)	( (u << 4) | r )
-#define CHANNEL(r)	( r >> 4 )
-#define REGNO(r)	( r & 0x07 )
-#define isStatusReg(r)	( r & 0x08 )
+#define REG(u, r)	(((u) << 4) | (r))
+#define CHANNEL(r)	((r) >> 4)
+#define REGNO(r)	((r) & 0x07)
+#define isStatusReg(r)	((r) & 0x08)
 
 #define WR0		0x00
 #define WR1		0x01

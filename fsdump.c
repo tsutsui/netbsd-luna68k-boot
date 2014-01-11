@@ -96,7 +96,7 @@ struct disklabel *lp = (void *)&index[offsetof(struct scd_dk_label, dkl_pad)];
 extern dev_t  rst0;
 extern dev_t nrst0;
 
-static u_char *dump_buf = (u_char *) 0x100000;
+static u_char *dump_buf = (u_char *)0x100000;
 
 extern int scsi_device;
 char cons_buf[100];
@@ -117,7 +117,7 @@ fsdump(int argc, char *argv[])
 	getline("Is it sure ? (y/n) ", cons_buf);
 
 	if ((cons_buf[0] != 'y') && (cons_buf[0] != 'Y'))
-		return(ST_ERROR);
+		return ST_ERROR;
 
 	scsi_read_raw(scsi_id, 0, 1, index, LABEL_SIZE);
 
@@ -144,7 +144,7 @@ fsdump(int argc, char *argv[])
 		printf("%d bytes ... ", size);
 		if (size <= 0) {
 			printf("failed\n");
-			return(ST_ERROR);
+			return ST_ERROR;
 		}
 		boot_stat.st_size = size;
 	}
@@ -155,7 +155,7 @@ fsdump(int argc, char *argv[])
 
 	if (status < size) {
 		printf("failed\n");
-		return(ST_ERROR);
+		return ST_ERROR;
 	}
 
 	printf("done\n");
@@ -168,7 +168,7 @@ fsdump(int argc, char *argv[])
 
 	if (status < LABEL_SIZE) {
 		printf("failed\n");
-		return(ST_ERROR);
+		return ST_ERROR;
 	}
 
 	printf("done\n\n");
@@ -177,8 +177,10 @@ fsdump(int argc, char *argv[])
 		pp = &(lp->d_partitions[i]);
 		if (pp->p_size > 0) {
 			printf("%c: ", i + 'A');
-			printf("size = %d(0x%s), ", pp->p_size, hexstr(pp->p_size, 8));
-			printf("offset = %d(0x%s)\n", pp->p_offset, hexstr(pp->p_offset, 8));
+			printf("size = %d(0x%s), ",
+			    pp->p_size, hexstr(pp->p_size, 8));
+			printf("offset = %d(0x%s)\n",
+			    pp->p_offset, hexstr(pp->p_offset, 8));
 			
 			blk   = pp->p_offset;
 			nblks = pp->p_size;
@@ -201,14 +203,15 @@ fsdump(int argc, char *argv[])
 					bytes = nblks << DEV_BSHIFT;
 				}
 
-				if (!scsi_read_raw(scsi_id, blk, block, dump_buf, bytes)) {
+				if (!scsi_read_raw(scsi_id, blk, block,
+				    dump_buf, bytes)) {
 					printf("disk read failed !!!\n");
-					return(ST_ERROR);
+					return ST_ERROR;
 				}
 
 				if (stwrite(rst0, dump_buf, bytes) < bytes) {
 					printf("tape write failed !!!\n");
-					return(ST_ERROR);
+					return ST_ERROR;
 				}
 
 				blk   += block;
@@ -222,7 +225,7 @@ fsdump(int argc, char *argv[])
 			printf("\n\n");
 		}
 	}
-	return(ST_NORMAL);
+	return ST_NORMAL;
 }
 
 int
@@ -237,7 +240,7 @@ fsrestore(int argc, char *argv[])
 	getline("Is it sure ? (y/n) ", cons_buf);
 
 	if ((cons_buf[0] != 'y') && (cons_buf[0] != 'Y'))
-		return(ST_ERROR);
+		return ST_ERROR;
 
 	st_rewind(rst0);
 
@@ -251,8 +254,10 @@ fsrestore(int argc, char *argv[])
 		pp = &(lp->d_partitions[i]);
 		if (pp->p_size > 0) {
 			printf("%c: ", i + 'A');
-			printf("size = %d(0x%s), ", pp->p_size, hexstr(pp->p_size, 8));
-			printf("offset = %d(0x%s)\n", pp->p_offset, hexstr(pp->p_offset, 8));
+			printf("size = %d(0x%s), ",
+			    pp->p_size, hexstr(pp->p_size, 8));
+			printf("offset = %d(0x%s)\n",
+			    pp->p_offset, hexstr(pp->p_offset, 8));
 			
 			blk   = pp->p_offset;
 			nblks = pp->p_size;
@@ -277,12 +282,12 @@ fsrestore(int argc, char *argv[])
 
 				if (stread(rst0, dump_buf, bytes) != bytes) {
 					printf("tape read failed !!!\n");
-					return(ST_ERROR);
+					return ST_ERROR;
 				}
 
 				if (!scsi_write(blk, dump_buf, bytes)) {
 					printf("disk write failed !!!\n");
-					return(ST_ERROR);
+					return ST_ERROR;
 				}
 
 				blk   += block;
@@ -295,5 +300,5 @@ fsrestore(int argc, char *argv[])
 			printf("\n\n");
 		}
 	}
-	return(ST_NORMAL);
+	return ST_NORMAL;
 }

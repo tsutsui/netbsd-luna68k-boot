@@ -72,7 +72,7 @@
 
 /*
  * getline -- simple getline function
- * 	by A.Fujita, Dec-11-1992
+ *	by A.Fujita, Dec-11-1992
  */
 
 #include <lib/libkern/libkern.h>

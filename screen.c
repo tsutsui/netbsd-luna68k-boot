@@ -128,5 +128,5 @@ screen(int argc, char *argv[])
 		}
 	}
 
-	return(ST_NORMAL);
+	return ST_NORMAL;
 }

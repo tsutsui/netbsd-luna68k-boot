@@ -80,25 +80,28 @@
 struct rcvbuf {
 	u_char	* volatile rb_push;
 	u_char	* volatile rb_pop;
-	u_char	 rb_buf[RBUF_SIZE+4];
+	u_char	 rb_buf[RBUF_SIZE + 4];
 };
 
-#define RBUF_INIT(n)	rcvbuf[n].rb_pop = rcvbuf[n].rb_push = &rcvbuf[n].rb_buf[RBUF_SIZE]
+#define RBUF_INIT(n)							\
+do {									\
+	rcvbuf[n].rb_pop = rcvbuf[n].rb_push = &rcvbuf[n].rb_buf[RBUF_SIZE]; \
+} while (/* CONSTCOND */0)
 
 #define PUSH_RBUF(n, c)							\
 do {									\
-	*(--rcvbuf[n].rb_push) = c ;					\
+	*(--rcvbuf[n].rb_push) = (c);					\
 	if (rcvbuf[n].rb_push == rcvbuf[n].rb_buf)			\
 		rcvbuf[n].rb_push = &rcvbuf[n].rb_buf[RBUF_SIZE];	\
 } while (/* CONSTCOND */0)
 
 #define POP_RBUF(n, c)							\
 do {									\
-	c= *(--rcvbuf[n].rb_pop);					\
+	(c) = *(--rcvbuf[n].rb_pop);					\
 	if (rcvbuf[n].rb_pop == rcvbuf[n].rb_buf)			\
 		rcvbuf[n].rb_pop = &rcvbuf[n].rb_buf[RBUF_SIZE];	\
-} while (0)
+} while (/* CONSTCOND */0)
 
-#define RBUF_EMPTY(n)	(rcvbuf[n].rb_push == rcvbuf[n].rb_pop ? 1: 0)
+#define RBUF_EMPTY(n)	(rcvbuf[n].rb_push == rcvbuf[n].rb_pop)
 
 extern	struct rcvbuf	rcvbuf[];

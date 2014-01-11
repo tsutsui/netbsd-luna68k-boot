@@ -154,7 +154,7 @@ lance_get(void *cookie, void *data, size_t maxlen)
 	rmd = &lemem->lem_rmd[sc->sc_currmd];
 	if ((rmd->rmd1_bits & LE_R1_OWN) != 0)
 		return -1;
-	
+
 	csr = lereg->ler_rdp;
 #if 0
 	if ((csr & LE_C0_ERR) != 0)
@@ -313,7 +313,7 @@ lance_do_initialize(struct le_softc *sc)
 		}
 		DELAY(1);
 	} while ((reg & LE_C0_IDON) == 0);
-		
+
 	lereg->ler_rap = LE_CSR0;
 	lereg->ler_rdp = LE_C0_STRT | LE_C0_IDON;
 

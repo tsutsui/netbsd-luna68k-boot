@@ -127,8 +127,8 @@ int
 cngetc(void)
 {
 	if (cn_tab == NULL)
-		return(0);
-	return((*cn_tab->cn_getc)(cn_tab->cn_dev));
+		return 0;
+	return (*cn_tab->cn_getc)(cn_tab->cn_dev);
 }
 
 void

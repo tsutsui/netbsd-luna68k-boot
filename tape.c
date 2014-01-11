@@ -87,7 +87,7 @@ int
 tape(int argc, char *argv[])
 {
 	int size, count;
-	u_long *p = (u_long *) buff;
+	u_long *p = (u_long *)buff;
 
 	if (!strcmp(argv[1], "read")) {
 		count = 0;
@@ -109,8 +109,8 @@ tape(int argc, char *argv[])
 	} else if (!strcmp(argv[1], "skip")) {
 		st_skip(rst0);
 	} else {
-		return(ST_ERROR);
+		return ST_ERROR;
 	}
 
-	return(ST_NORMAL);
+	return ST_NORMAL;
 }

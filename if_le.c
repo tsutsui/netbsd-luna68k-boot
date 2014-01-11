@@ -205,12 +205,12 @@ le_put(struct iodesc *desc, void *pkt, size_t len)
 	struct netif_dif *dif = &nif->nif_driver->netif_ifs[nif->nif_unit];
 	void *cookie = dif->dif_private;
 #ifdef DEBUG
- 	struct ether_header *eh;
+	struct ether_header *eh;
 
- 	eh = pkt;
- 	printf("dst:  %s\n", ether_sprintf(eh->ether_dhost));
- 	printf("src:  %s\n", ether_sprintf(eh->ether_shost));
- 	printf("type: 0x%x\n", eh->ether_type & 0xffff);
+	eh = pkt;
+	printf("dst:  %s\n", ether_sprintf(eh->ether_dhost));
+	printf("src:  %s\n", ether_sprintf(eh->ether_shost));
+	printf("type: 0x%x\n", eh->ether_type & 0xffff);
 #endif
 
 	return lance_put(cookie, pkt, len) ? len : -1;
