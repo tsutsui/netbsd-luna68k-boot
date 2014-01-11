@@ -14,3 +14,4 @@ is taken as the current.
 1.7:	Check boot device on PROM and set proper default boot device and unit.
 1.8:	Probe SCSI devices at any IDs and change boot command to use SCSI
 	controller number and target ID to specify the boot disk.
+1.9:	Parse boot flags and pass boothowto and bootdev info to kernel.
