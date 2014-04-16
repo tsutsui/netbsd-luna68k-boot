@@ -145,7 +145,7 @@ lance_get(void *cookie, void *data, size_t maxlen)
 	struct lereg *lereg = sc->sc_reg;
 	struct lemem *lemem = sc->sc_mem;
 	struct lermd_v *rmd;
-	uint16_t csr;
+	uint16_t csr __unused;
 	int len = -1;
 
 	lereg->ler_rap = LE_CSR0;

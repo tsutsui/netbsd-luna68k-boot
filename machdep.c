@@ -87,10 +87,10 @@ int	*nofault = 0;
 int
 badaddr(volatile void *addr)
 {
-	int i;
 	label_t	faultbuf;
 
 #ifdef lint
+	int i;
 	i = *addr; if (i) return 0;
 #endif
 	nofault = (int *) &faultbuf;
@@ -98,7 +98,7 @@ badaddr(volatile void *addr)
 		nofault = NULL;
 		return 1;
 	}
-	i = *(volatile short *)addr;
+	(void)*(volatile short *)addr;
 	nofault = NULL;
 	return 0;
 }
