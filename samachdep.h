@@ -103,6 +103,7 @@ extern int hz;
 extern int nplane;
 extern int machtype;
 extern char default_file[];
+extern int default_unit;
 
 /* kbd.c */
 int kbd_decode(u_char);

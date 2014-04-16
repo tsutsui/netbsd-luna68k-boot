@@ -123,9 +123,12 @@ make_device(const char *str, int *devp, int *unitp, int *partp, char **fname)
 {
 	const char *cp;
 	struct devsw *dp;
-	int dev, unit = 0, part = 0;
+	int dev, unit, part;
 	int i;
 	char devname[MAXDEVNAME + 1];
+
+	unit = default_unit;
+	part = 0;
 
 	/*
 	 * parse path strings

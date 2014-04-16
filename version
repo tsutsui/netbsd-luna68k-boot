@@ -15,3 +15,4 @@ is taken as the current.
 1.8:	Probe SCSI devices at any IDs and change boot command to use SCSI
 	controller number and target ID to specify the boot disk.
 1.9:	Parse boot flags and pass boothowto and bootdev info to kernel.
+1.10:	Use booted device unit by default if no unit number is specified.
