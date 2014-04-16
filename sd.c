@@ -266,6 +266,9 @@ sdstrategy(void *devdata, int func, daddr_t dblk, size_t size, void *v_buf,
 #endif
 	stat = scsi_immed_command(sc->sc_ctlr, sc->sc_tgt, sc->sc_lun,
 	    cdb, buf, size);
+	if (stat != 0)
+		return EIO;
+
 	if (rsize)
 		*rsize = size;
 
