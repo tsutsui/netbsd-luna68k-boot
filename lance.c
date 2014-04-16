@@ -1,4 +1,4 @@
-/*	$NetBSD: lance.c,v 1.2 2014/01/11 15:51:02 tsutsui Exp $	*/
+/*	$NetBSD: lance.c,v 1.3 2014/04/16 11:18:00 tsutsui Exp $	*/
 
 /*
  * Copyright (c) 2013 Izumi Tsutsui.  All rights reserved.
