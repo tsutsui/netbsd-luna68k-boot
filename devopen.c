@@ -1,4 +1,4 @@
-/*	$NetBSD: devopen.c,v 1.7 2014/04/16 13:43:02 tsutsui Exp $	*/
+/*	$NetBSD: devopen.c,v 1.8 2014/04/21 11:06:55 tsutsui Exp $	*/
 
 /*
  * Copyright (c) 1992 OMRON Corporation.
