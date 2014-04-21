@@ -103,6 +103,7 @@ extern int hz;
 extern int nplane;
 extern int machtype;
 extern char default_file[];
+extern const char *default_bootdev;
 extern int default_unit;
 
 /* kbd.c */

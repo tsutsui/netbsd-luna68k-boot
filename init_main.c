@@ -88,6 +88,7 @@ int cpuspeed;	/* for DELAY() macro */
 int hz = 60;
 int machtype;
 char default_file[64];
+const char *default_bootdev;
 int default_unit;
 
 #define	VERS_LOCAL	"Phase-31"
@@ -287,6 +288,7 @@ main(void)
 
 	snprintf(default_file, sizeof(default_file),
 	    "%s(%d,%d)%s", bootdev, unit, part, "netbsd");
+	default_bootdev = bootdev;
 	default_unit = unit;
 
 	howto = reorder_dipsw(dipsw2);
