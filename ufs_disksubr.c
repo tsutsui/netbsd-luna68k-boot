@@ -91,7 +91,7 @@
 char *
 readdisklabel(int ctlr, int id, struct disklabel *lp)
 {
-	u_char *bp = lbl_buff;
+	uint8_t *bp = lbl_buff;
 	struct disklabel *dlp;
 	char *msg = NULL;
 	static struct scsi_generic_cdb cdb = {

@@ -78,9 +78,9 @@
 #define	RBUF_SIZE	128
 
 struct rcvbuf {
-	u_char	* volatile rb_push;
-	u_char	* volatile rb_pop;
-	u_char	 rb_buf[RBUF_SIZE + 4];
+	uint8_t	* volatile rb_push;
+	uint8_t	* volatile rb_pop;
+	uint8_t	 rb_buf[RBUF_SIZE + 4];
 };
 
 #define RBUF_INIT(n)							\

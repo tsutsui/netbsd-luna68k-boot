@@ -74,16 +74,16 @@ struct	scsi_softc {
 	struct	scsidevice *sc_spc;
 	int	sc_ctlr;
 
-	u_char	*sc_buf;				/* Data Buffer Pointor*/
-	u_char	*sc_cdb;				/* CDB Buffer Pointor */
+	uint8_t	*sc_buf;				/* Data Buffer Pointor*/
+	uint8_t	*sc_cdb;				/* CDB Buffer Pointor */
 	volatile int *sc_lock;				/* Lock Flag addres   */
 	int	sc_flags;				/* SPC Status Flags   */
 	int	sc_phase;				/* Current SCSI Phase */
 	int	sc_target;				/* Current Target ID  */
 	int	sc_len;					/* Buffer Length      */
 	int	sc_cdblen;				/* CDB length         */
-	u_char	sc_stat;
-	u_char	sc_msg[7];
+	uint8_t	sc_stat;
+	uint8_t	sc_msg[7];
 };
 
 
