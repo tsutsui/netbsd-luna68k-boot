@@ -1,4 +1,4 @@
-/*	$NetBSD: samachdep.h,v 1.19 2014/04/21 11:06:55 tsutsui Exp $	*/
+/*	$NetBSD: samachdep.h,v 1.20 2015/02/14 05:03:09 tsutsui Exp $	*/
 
 /*
  * Copyright (c) 1982, 1990, 1993

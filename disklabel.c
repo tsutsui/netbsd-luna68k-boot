@@ -1,4 +1,4 @@
-/*	$NetBSD: disklabel.c,v 1.6 2015/01/02 19:42:05 christos Exp $	*/
+/*	$NetBSD: disklabel.c,v 1.7 2015/02/14 05:03:09 tsutsui Exp $	*/
 
 /*
  * Copyright (c) 1992 OMRON Corporation.
