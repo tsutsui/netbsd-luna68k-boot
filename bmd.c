@@ -1,4 +1,4 @@
-/*	$NetBSD: bmd.c,v 1.6 2015/02/14 05:58:02 tsutsui Exp $	*/
+/*	$NetBSD: bmd.c,v 1.7 2015/02/14 06:31:31 tsutsui Exp $	*/
 
 /*
  * Copyright (c) 1992 OMRON Corporation.
