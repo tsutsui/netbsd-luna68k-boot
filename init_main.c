@@ -328,7 +328,7 @@ main(void)
 	exit(0);
 }
 
-int
+static int
 get_plane_numbers(void)
 {
 	int r = ROM_plane;
@@ -341,7 +341,7 @@ get_plane_numbers(void)
 	return n;
 }
 
-int
+static int
 reorder_dipsw(int dipsw)
 {
 	int i, sw = 0;

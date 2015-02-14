@@ -96,10 +96,10 @@ struct	sd_softc {
 	struct disklabel sc_label;
 };
 
-static struct sd_softc *sdinit(uint);
 static int sdident(struct sd_softc *);
+static struct sd_softc *sdinit(uint);
 
-int
+static int
 sdident(struct sd_softc *sc)
 {
 	struct scsi_inquiry inqbuf;
@@ -123,7 +123,7 @@ sdident(struct sd_softc *sc)
 	return inqbuf.type;
 }
 
-struct sd_softc *
+static struct sd_softc *
 sdinit(uint unit)
 {
 	struct sd_softc *sc;

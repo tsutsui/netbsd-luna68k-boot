@@ -329,7 +329,7 @@ disklabel(int argc, char *argv[])
 	return ST_NORMAL;
 }
 
-void
+static void
 display(struct disklabel *lp)
 {
 	int i, j;
