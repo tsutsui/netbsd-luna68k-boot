@@ -130,7 +130,7 @@ struct command_entry {
 	int (*func)(int, char **);
 };
 
-struct command_entry entries[] = {
+static const struct command_entry entries[] = {
 	{ "b",		boot         },
 	{ "boot",	boot         },
 	{ "chkargs",	check_args   },

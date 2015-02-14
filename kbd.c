@@ -79,7 +79,7 @@
 #include <luna68k/stand/boot/samachdep.h>
 #include <luna68k/stand/boot/kbdreg.h>
 
-struct kbd_keymap kbd_keymap[] = {
+static const struct kbd_keymap kbd_keymap[] = {
 	{ KC_IGNORE,	{ 0,	    0        } },	/*   0 [0x00]	      */
 	{ KC_IGNORE,	{ 0,	    0        } },	/*   1 [0x01]	      */
 	{ KC_IGNORE,	{ 0,	    0        } },	/*   2 [0x02]	      */
