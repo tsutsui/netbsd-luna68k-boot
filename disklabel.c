@@ -399,15 +399,15 @@ display(struct disklabel *lp)
 			printf("\t# (Cyl. %d",
 			    pp->p_offset / lp->d_secpercyl);
 			if (pp->p_offset % lp->d_secpercyl)
-				cnputc('*');
+				putchar('*');
 			else
-				cnputc(' ');
+				putchar(' ');
 			printf("- %d",
 			    (pp->p_offset +
 			    pp->p_size + lp->d_secpercyl - 1) /
 			    lp->d_secpercyl - 1);
 			if (pp->p_size % lp->d_secpercyl)
-				cnputc('*');
+				putchar('*');
 			printf(")\n");
 		}
 	}
